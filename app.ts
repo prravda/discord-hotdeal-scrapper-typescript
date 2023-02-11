@@ -1,9 +1,11 @@
 import * as dotenv from 'dotenv';
-import { Client } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
+const { Guilds, MessageContent, GuildMessages, GuildMembers } =
+    GatewayIntentBits;
 dotenv.config();
 
 const client = new Client({
-    intents: [],
+    intents: [Guilds, MessageContent, GuildMessages, GuildMembers],
 });
 
 client.login(process.env.DISCORD_TOKEN);
