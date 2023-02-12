@@ -1,58 +1,49 @@
-import express from 'express';
+import { Client, Events, GatewayIntentBits } from 'discord.js';
+const { Guilds, GuildMessages } = GatewayIntentBits;
 
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { Command, SlashCommand } from './types';
 
-import { DiscordUtils } from './infra/discord-utils';
-import { InteractionType, InteractionResponseType } from 'discord-interactions';
-import { ECHO_COMMAND, TEST_COMMAND } from './src/commands';
+import { CommandHandler } from './infra/discord/command-handler';
+import { TestDogCommand } from './src/commands/slash/test-dog';
+import { envList } from './infra/config';
 
-const app = express();
-const port = process.env.PORT;
-const utils = new DiscordUtils();
+const slashCommandList: SlashCommand[] = [TestDogCommand];
+const generalCommandList: Command[] = [];
 
-app.use(
-    express.json({
-        verify: utils.verifyDiscordRequest(process.env.PUBLIC_KEY as string),
+const commandHandler = new CommandHandler(
+    slashCommandList,
+    generalCommandList,
+    new Client({
+        intents: [Guilds, GuildMessages],
     })
 );
 
-app.post('/interactions', async (req, res) => {
-    const { type, id, data } = req.body;
+commandHandler.enrollCommandToDiscordInfra();
+const client = commandHandler.enrollCommandsToLocalClient();
 
-    if (type === InteractionType.APPLICATION_COMMAND) {
-        const { name } = data;
+client.once(Events.ClientReady, (c) => {
+    console.log(`Ready! logged in as ${c.user.tag}`);
+});
 
-        if (name === 'test') {
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    content: `Hi, it's hgfarm bot!`,
-                },
-            });
-        }
+client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
 
-        if (name === 'echo') {
-            const messageToEcho = req.body.data.options[0].value;
+    const command = client.slashCommands.get(interaction.commandName);
 
-            console.log(messageToEcho);
+    if (!command) {
+        console.error(
+            `No command matching ${interaction.commandName} was found`
+        );
+    }
 
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    content: `It is what you said? ${messageToEcho}`,
-                },
-            });
-        }
+    try {
+        await command.execute(interaction);
+    } catch (e) {
+        console.error(e);
+        await interaction.reply({
+            content: `An error is occurred!`,
+        });
     }
 });
 
-app.listen(port, async () => {
-    console.log(`Bot is started and listen port: ${port}`);
-
-    await utils.hasGuildCommands(
-        process.env.APP_ID as string,
-        process.env.GUILD_ID as string,
-        [TEST_COMMAND, ECHO_COMMAND]
-    );
-});
+client.login(envList.DISCORD_TOKEN);
