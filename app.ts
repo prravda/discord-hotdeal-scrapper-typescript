@@ -1,11 +1,49 @@
-import * as dotenv from 'dotenv';
-import { Client, GatewayIntentBits } from 'discord.js';
-const { Guilds, MessageContent, GuildMessages, GuildMembers } =
-    GatewayIntentBits;
-dotenv.config();
+import { Client, Events, GatewayIntentBits } from 'discord.js';
+const { Guilds, GuildMessages } = GatewayIntentBits;
 
-const client = new Client({
-    intents: [Guilds, MessageContent, GuildMessages, GuildMembers],
+import { Command, SlashCommand } from './types';
+
+import { CommandHandler } from './infra/discord/command-handler';
+import { TestDogCommand } from './src/commands/slash/test-dog';
+import { envList } from './infra/config';
+
+const slashCommandList: SlashCommand[] = [TestDogCommand];
+const generalCommandList: Command[] = [];
+
+const commandHandler = new CommandHandler(
+    slashCommandList,
+    generalCommandList,
+    new Client({
+        intents: [Guilds, GuildMessages],
+    })
+);
+
+commandHandler.enrollCommandToDiscordInfra();
+const client = commandHandler.enrollCommandsToLocalClient();
+
+client.once(Events.ClientReady, (c) => {
+    console.log(`Ready! logged in as ${c.user.tag}`);
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = client.slashCommands.get(interaction.commandName);
+
+    if (!command) {
+        console.error(
+            `No command matching ${interaction.commandName} was found`
+        );
+    }
+
+    try {
+        await command.execute(interaction);
+    } catch (e) {
+        console.error(e);
+        await interaction.reply({
+            content: `An error is occurred!`,
+        });
+    }
+});
+
+client.login(envList.DISCORD_TOKEN);
