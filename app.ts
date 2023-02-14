@@ -1,13 +1,16 @@
+import { envList } from './infra/env-config';
+
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 const { Guilds, GuildMessages } = GatewayIntentBits;
 
 import { Command, SlashCommand } from './types';
 
 import { CommandHandler } from './infra/discord/command-handler';
-import { TestDogCommand } from './src/commands/slash/test-dog';
-import { envList } from './infra/config';
 
-const slashCommandList: SlashCommand[] = [TestDogCommand];
+import { TestDogCommand } from './src/commands/slash/test-dog';
+import { HotdealPpomppu } from './src/commands/slash/hotdeal-ppomppu';
+
+const slashCommandList: SlashCommand[] = [TestDogCommand, HotdealPpomppu];
 const generalCommandList: Command[] = [];
 
 const commandHandler = new CommandHandler(

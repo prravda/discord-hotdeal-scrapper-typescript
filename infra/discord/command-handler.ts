@@ -10,7 +10,7 @@ import {
     REST,
     Routes,
 } from 'discord.js';
-import { envList } from '../config';
+import { envList } from '../env-config';
 
 export class CommandHandler {
     constructor(

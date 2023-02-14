@@ -11,6 +11,12 @@ export interface SlashCommand {
     cooldown?: number;
 }
 
+export interface BasicHotDeal {
+    title: string;
+    link: string;
+    description?: string;
+}
+
 export interface DiscordCommandEnrollResponse {
     id: string;
     application_id: string;
