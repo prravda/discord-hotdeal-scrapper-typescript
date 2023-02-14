@@ -20,12 +20,9 @@ export const HotdealPpomppu: SlashCommand = {
 
         for (const eachDeal of hotDealResult) {
             embedFormatted.push({
-                name: '제목',
-                value: eachDeal.title
-                    ? eachDeal.title
-                    : '링크 접속 후 확인 필요',
+                name: `${eachDeal.title}`,
+                value: eachDeal.link,
             });
-            embedFormatted.push({ name: '링크', value: eachDeal.link });
         }
 
         const resultEmbed = new EmbedBuilder()
