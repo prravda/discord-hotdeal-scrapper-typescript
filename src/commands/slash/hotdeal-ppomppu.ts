@@ -14,17 +14,17 @@ export const HotdealPpomppu: SlashCommand = {
         const scrapperInstance = new HotDealScrapper();
         const hotDealResult = await scrapperInstance.requestDocument();
 
-        const embedFormatted: RestOrArray<APIEmbedField> = [];
-
-        for (const eachDeal of hotDealResult) {
-            embedFormatted.push({
-                name: '제목',
-                value: eachDeal.title
-                    ? eachDeal.title
-                    : '링크 접속 후 확인 필요',
-            });
-            embedFormatted.push({ name: '링크', value: eachDeal.link });
-        }
+        // const embedFormatted: RestOrArray<APIEmbedField> = [];
+        //
+        // for (const eachDeal of hotDealResult) {
+        //     embedFormatted.push({
+        //         name: '제목',
+        //         value: eachDeal.title
+        //             ? eachDeal.title
+        //             : '링크 접속 후 확인 필요',
+        //     });
+        //     embedFormatted.push({ name: '링크', value: eachDeal.link });
+        // }
 
         const resultEmbed = new EmbedBuilder()
             .setColor(0xefff00)
@@ -34,9 +34,16 @@ export const HotdealPpomppu: SlashCommand = {
                     timeZone: 'Asia/Seoul',
                 })} 기준`
             )
-            .addFields({
-                ...embedFormatted,
-            });
+            .addFields(
+                {
+                    name: '제목',
+                    value: hotDealResult[0].title as string,
+                },
+                {
+                    name: '링크',
+                    value: hotDealResult[0].link,
+                }
+            );
 
         if (hotDealResult) {
             await interaction.editReply({ embeds: [resultEmbed] });
