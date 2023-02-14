@@ -11,6 +11,8 @@ export const HotdealPpomppu: SlashCommand = {
         })} 기준 유효한 뽐뿌 핫딜을 불러옵니다.`
     ),
     execute: async (interaction) => {
+        await interaction.deferReply();
+
         const scrapperInstance = new HotDealScrapper();
         const hotDealResult = await scrapperInstance.requestDocument();
 
