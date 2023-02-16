@@ -8,9 +8,14 @@ import { Command, SlashCommand } from './types';
 import { CommandHandler } from './infra/discord/command-handler';
 
 import { TestDogCommand } from './src/commands/slash/test-dog';
-import { HotdealPpomppu } from './src/commands/slash/hotdeal-ppomppu';
+import { HotDealPpomppuCommand } from './src/commands/slash/hot-deal-ppomppu-command';
+import { HotDealFmKoreaCommand } from './src/commands/slash/hotdeal-fmkorea';
 
-const slashCommandList: SlashCommand[] = [TestDogCommand, HotdealPpomppu];
+const slashCommandList: SlashCommand[] = [
+    TestDogCommand,
+    HotDealPpomppuCommand,
+    HotDealFmKoreaCommand,
+];
 const generalCommandList: Command[] = [];
 
 const commandHandler = new CommandHandler(

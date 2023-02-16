@@ -1,18 +1,17 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { SlashCommand } from '../../../types';
-import { HotDealScrapper } from '../../scrapper/hot-deal-scrapper';
+import { PpomppuHotDealScrapper } from '../../scrappers/ppomppu-hot-deal-scrapper';
 import { APIEmbedField } from 'discord-api-types/v10';
 
-export const HotdealPpomppu: SlashCommand = {
-    command: new SlashCommandBuilder().setName('뽐').setDescription(
-        `${new Date().toLocaleTimeString('ko-KR', {
-            timeZone: 'Asia/Seoul',
-        })} 기준 유효한 뽐뿌 핫딜을 불러옵니다.`
-    ),
+export const HotDealPpomppuCommand: SlashCommand = {
+    command: new SlashCommandBuilder()
+        .setName('뽐')
+        .setDescription(`명령어 호출 시점 기준 유효한 뽐뿌 핫딜을 불러옵니다.`),
+
     execute: async (interaction) => {
         await interaction.deferReply();
 
-        const scrapperInstance = new HotDealScrapper();
+        const scrapperInstance = new PpomppuHotDealScrapper();
         const hotDealResult = await scrapperInstance.requestDocument();
 
         const resultEmbed = new EmbedBuilder()
