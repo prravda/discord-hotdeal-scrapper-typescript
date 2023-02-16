@@ -169,6 +169,3 @@ export class FmKoreaHotDealScrapper {
         }
     }
 }
-
-const instance = new FmKoreaHotDealScrapper();
-instance.requestDocument().then((d) => console.log(JSON.stringify(d)));
