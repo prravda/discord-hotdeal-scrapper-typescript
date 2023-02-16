@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom';
 import { decode } from 'iconv-lite';
 import { BasicHotDeal } from '../../types';
 
-export class HotDealScrapper {
+export class PpomppuHotDealScrapper {
     public async requestDocument() {
         try {
             const result = await axios.request({

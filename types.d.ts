@@ -14,7 +14,14 @@ export interface SlashCommand {
 export interface BasicHotDeal {
     title: string;
     link: string;
-    description?: string;
+}
+
+interface FmKoreaHotDeal extends BasicHotDeal {
+    detailedInfo: {
+        sellerName: string;
+        productPrice: string;
+        shippingCharge: string;
+    };
 }
 
 export interface DiscordCommandEnrollResponse {
