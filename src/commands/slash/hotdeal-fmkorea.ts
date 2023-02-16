@@ -3,7 +3,7 @@ import { SlashCommand } from '../../../types';
 import { APIEmbedField } from 'discord-api-types/v10';
 import { FmKoreaHotDealScrapper } from '../../scrappers/fmkorea-hot-deal-scrapper';
 
-export const HotdealPpomppu: SlashCommand = {
+export const HotDealFmKoreaCommand: SlashCommand = {
     command: new SlashCommandBuilder()
         .setName('펨')
         .setDescription(` 기준 유효한 펨코 핫딜을 불러옵니다.`),

@@ -3,7 +3,7 @@ import { SlashCommand } from '../../../types';
 import { PpomppuHotDealScrapper } from '../../scrappers/ppomppu-hot-deal-scrapper';
 import { APIEmbedField } from 'discord-api-types/v10';
 
-export const HotdealPpomppu: SlashCommand = {
+export const HotDealPpomppuCommand: SlashCommand = {
     command: new SlashCommandBuilder()
         .setName('뽐')
         .setDescription(`명령어 호출 시점 기준 유효한 뽐뿌 핫딜을 불러옵니다.`),
