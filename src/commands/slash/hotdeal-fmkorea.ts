@@ -59,9 +59,10 @@ export const HotDealFmKoreaCommand: SlashCommand = {
             if (hotDealResult) {
                 await interaction.editReply({ embeds: [resultEmbed] });
             }
+            throw new Error('error for testing');
         } catch (e) {
             console.error(e);
-            await interaction.editReply('오류 발생');
+            await interaction.deleteReply();
         }
     },
 };
