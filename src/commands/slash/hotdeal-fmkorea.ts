@@ -25,7 +25,7 @@ export const HotDealFmKoreaCommand: SlashCommand = {
             .setTitle('펨코 핫 딜 목록!')
             .setDescription('상품명/판매처/가격/배송비 순입니다.')
             .addFields(
-                { name: '인기핫딜', value: '---' },
+                { name: '**인기핫딜**', value: '------' },
                 ...hotDealResult.popularHotDealList.map<APIEmbedField>(
                     (deal) => {
                         return {
@@ -36,11 +36,11 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                 )
             )
             .addFields(
-                { name: '일반핫딜', value: '---' },
+                { name: '**일반핫딜**', value: '------' },
                 ...hotDealResult.generalHotDealList.map<APIEmbedField>(
                     (deal) => {
                         return {
-                            name: `${deal.title}/${deal.detailedInfo.sellerName}/${deal.detailedInfo.productPrice}/${deal.detailedInfo.shippingCharge}`,
+                            name: `${deal.title} / ${deal.detailedInfo.sellerName} / ${deal.detailedInfo.productPrice} / ${deal.detailedInfo.shippingCharge}`,
                             value: deal.link,
                         };
                     }
