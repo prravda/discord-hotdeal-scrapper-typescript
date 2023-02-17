@@ -7,7 +7,8 @@ export const HotDealFmKoreaCommand: SlashCommand = {
     command: new SlashCommandBuilder()
         .setName('펨')
         .setDescription(
-            `펨코 핫딜을 불러옵니다. 갱신은 약 15분에 한 번씩 이뤄집니다.`
+            '펨코 핫딜을 불러옵니다. 갱신은 약 15분에 한 번씩 이뤄집니다.' +
+                '\n상단 다섯개 목록은 핫딜 중 인기 핫딜, 나머지는 일반 핫딜입니다.'
         ),
 
     execute: async (interaction) => {
