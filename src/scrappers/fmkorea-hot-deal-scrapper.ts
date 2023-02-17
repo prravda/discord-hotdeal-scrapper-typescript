@@ -145,9 +145,20 @@ export class FmKoreaHotDealScrapper {
                     const placeHolderMessageForInvalidLink =
                         '페이지에 직접 접속 후 확인 필요';
 
-                    const title = rawTitleAndLink.innerText
-                        .trim()
-                        .replace('/\\s*\\[[^\\]]*\\]/', '');
+                    const trimAndRemoveCommentSection = (
+                        rawString: string
+                    ): string => {
+                        for (let i = rawString.length; i >= 0; i--) {
+                            if (rawString[i] === '[') {
+                                return rawString.slice(0, i).trim();
+                            }
+                        }
+                        return rawString.trim();
+                    };
+
+                    const title = trimAndRemoveCommentSection(
+                        rawTitleAndLink.innerText
+                    );
 
                     const link = rawTitleAndLink.getAttribute('href')
                         ? `https://fmkorea.com${rawTitleAndLink.getAttribute(
