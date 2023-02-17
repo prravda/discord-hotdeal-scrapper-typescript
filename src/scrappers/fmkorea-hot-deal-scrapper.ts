@@ -104,9 +104,8 @@ export class FmKoreaHotDealScrapper {
                 ): string => {
                     if (verboseUrl) {
                         const extractedSrl = verboseUrl
-                            .split('?')[1]
-                            .split('&')[1]
-                            .split('=')[1];
+                            .split('document_srl=')[1]
+                            .split('&')[0];
                         return `https://www.fmkorea.com/${extractedSrl}`;
                     }
                     return '접속 후 확인해 주세요.';
@@ -133,76 +132,91 @@ export class FmKoreaHotDealScrapper {
             const generalItemListSelector =
                 '.li.li_best2_pop0.li_best2_hotdeal0';
 
-            return await hotDealPage.evaluate((generalItemListSelector) => {
-                const rawListOfGeneralHotDeal = Array.from<HTMLLIElement>(
-                    document.querySelectorAll<HTMLLIElement>(
-                        generalItemListSelector
-                    )
-                );
-
-                return rawListOfGeneralHotDeal.map<FmKoreaHotDeal>((r) => {
-                    const [sellerName, productPrice, shippingCharge] =
-                        Array.from<HTMLAnchorElement>(
-                            r.querySelectorAll<HTMLAnchorElement>('a.strong')
-                        ).map((a) => a.innerText.trim());
-
-                    const rawTitleAndLink =
-                        r.querySelector<HTMLAnchorElement>('h3.title > a');
-
-                    if (!rawTitleAndLink) {
-                        console.error(rawTitleAndLink);
-                        throw new Error(
-                            `failed to getting the list of title and link html element of general item list`
-                        );
-                    }
-
-                    const placeHolderMessageForInvalidLink =
-                        '페이지에 직접 접속 후 확인 필요';
-
-                    const trimAndRemoveCommentSection = (
-                        rawString: string
-                    ): string => {
-                        for (let i = rawString.length; i >= 0; i--) {
-                            if (rawString[i] === '[') {
-                                return rawString.slice(0, i).trim();
-                            }
-                        }
-                        return rawString.trim();
-                    };
-
-                    const title = trimAndRemoveCommentSection(
-                        rawTitleAndLink.innerText
+            const unfilteredList = await hotDealPage.evaluate(
+                (generalItemListSelector) => {
+                    const rawListOfGeneralHotDeal = Array.from<HTMLLIElement>(
+                        document.querySelectorAll<HTMLLIElement>(
+                            generalItemListSelector
+                        )
                     );
 
-                    const link = rawTitleAndLink.getAttribute('href')
-                        ? `https://fmkorea.com${rawTitleAndLink.getAttribute(
-                              'href'
-                          )}`
-                        : placeHolderMessageForInvalidLink;
+                    return rawListOfGeneralHotDeal.map((r) => {
+                        const [sellerName, productPrice, shippingCharge] =
+                            Array.from<HTMLAnchorElement>(
+                                r.querySelectorAll<HTMLAnchorElement>(
+                                    'a.strong'
+                                )
+                            ).map((a) => a.innerText.trim());
 
-                    if (
-                        !sellerName ||
-                        !productPrice ||
-                        !shippingCharge ||
-                        !title ||
-                        link === placeHolderMessageForInvalidLink
-                    ) {
-                        throw new Error(
-                            `failed to getting general hot deal information`
+                        const rawTitleAndLink =
+                            r.querySelector<HTMLAnchorElement>('h3.title > a');
+
+                        if (!rawTitleAndLink) {
+                            console.error(rawTitleAndLink);
+                            throw new Error(
+                                `failed to getting the list of title and link html element of general item list`
+                            );
+                        }
+
+                        const placeHolderMessageForInvalidLink =
+                            '페이지에 직접 접속 후 확인 필요';
+
+                        const trimAndRemoveCommentSection = (
+                            rawString: string
+                        ): string => {
+                            for (let i = rawString.length; i >= 0; i--) {
+                                if (rawString[i] === '[') {
+                                    return rawString.slice(0, i).trim();
+                                }
+                            }
+                            return rawString.trim();
+                        };
+
+                        const title = trimAndRemoveCommentSection(
+                            rawTitleAndLink.innerText
                         );
-                    }
 
-                    return {
-                        title,
-                        link,
-                        detailedInfo: {
-                            sellerName,
-                            productPrice,
-                            shippingCharge,
-                        },
-                    };
+                        const link = rawTitleAndLink.getAttribute('href')
+                            ? `https://fmkorea.com${rawTitleAndLink.getAttribute(
+                                  'href'
+                              )}`
+                            : placeHolderMessageForInvalidLink;
+
+                        if (
+                            !sellerName ||
+                            !productPrice ||
+                            !shippingCharge ||
+                            !title ||
+                            link === placeHolderMessageForInvalidLink
+                        ) {
+                            throw new Error(
+                                `failed to getting general hot deal information`
+                            );
+                        }
+
+                        return {
+                            isValid:
+                                rawTitleAndLink.className.trim() ===
+                                'hotdeal_var8',
+                            title,
+                            link,
+                            detailedInfo: {
+                                sellerName,
+                                productPrice,
+                                shippingCharge,
+                            },
+                        };
+                    });
+                },
+                generalItemListSelector
+            );
+
+            return unfilteredList
+                .filter((l) => l.isValid)
+                .map<FmKoreaHotDeal>((validSet) => {
+                    const { isValid, ...otherProps } = validSet;
+                    return otherProps;
                 });
-            }, generalItemListSelector);
         } catch (e) {
             throw e;
         }
@@ -251,3 +265,6 @@ export class FmKoreaHotDealScrapper {
         }
     }
 }
+
+const test = new FmKoreaHotDealScrapper();
+test.requestDocument().then((r) => console.log(r));
