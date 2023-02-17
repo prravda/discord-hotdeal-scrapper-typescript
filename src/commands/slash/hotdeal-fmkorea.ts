@@ -39,7 +39,7 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                 )
                 .addFields(
                     ...hotDealResult.generalHotDealList
-                        .slice(20)
+                        .slice(0, 25 - hotDealResult.popularHotDealList.length)
                         .map<APIEmbedField>((deal) => {
                             return {
                                 name: `${deal.title} / ${deal.detailedInfo.sellerName} / ${deal.detailedInfo.productPrice} / ${deal.detailedInfo.shippingCharge}`,
