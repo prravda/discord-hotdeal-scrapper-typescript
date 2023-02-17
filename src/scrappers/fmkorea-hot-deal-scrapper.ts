@@ -1,6 +1,6 @@
 import { RuntimeConfig } from '../../infra/runtime-config';
-import { BasicHotDeal, FmKoreaHotDeal } from '../../types';
-import puppeteer from 'puppeteer';
+import { FmKoreaHotDeal, FmKoreaPopularHotDeal } from '../../types';
+import puppeteer, { Page } from 'puppeteer';
 
 const fmKoreaHttp2Headers = {
     ':path': '/',
@@ -76,13 +76,159 @@ export class FmKoreaHotDealScrapper {
 
         return compositedAgents[randomIndex];
     }
-    public async requestDocument() {
-        try {
-            const browser = await puppeteer.launch({
-                product: 'chrome',
-            });
-            console.log(`puppeteer instance is running...`);
 
+    private async parsePopularItem(
+        hotDealPage: Page,
+        userAgentPair: UserAgentPair
+    ): Promise<FmKoreaPopularHotDeal[]> {
+        try {
+            // case of desktop
+            const selectorForDesktop =
+                'tr.notice_pop1 > td.title > a:not([title])';
+            // case of mobile
+            const selectorForMobile = 'li.pop1 > a[href]';
+
+            const popularItemListSelector =
+                userAgentPair['sec-ch-ua-mobile'] === '?0'
+                    ? selectorForDesktop
+                    : selectorForMobile;
+
+            return await hotDealPage.evaluate((popularItemListSelector) => {
+                const listOfAnchorElement = Array.from<HTMLAnchorElement>(
+                    document.querySelectorAll<HTMLAnchorElement>(
+                        popularItemListSelector
+                    )
+                );
+                const refineVerboseUrl = (
+                    verboseUrl: string | null
+                ): string => {
+                    if (verboseUrl) {
+                        const extractedSrl = verboseUrl
+                            .split('document_srl=')[1]
+                            .split('&')[0];
+                        return `https://www.fmkorea.com/${extractedSrl}`;
+                    }
+                    return '접속 후 확인해 주세요.';
+                };
+
+                return listOfAnchorElement.map<FmKoreaPopularHotDeal>((a) => {
+                    const rawLink = a.getAttribute('href');
+
+                    return {
+                        title: a.innerText.trim(),
+                        link: refineVerboseUrl(rawLink),
+                    };
+                });
+            }, popularItemListSelector);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    private async parseGeneralItem(
+        hotDealPage: Page
+    ): Promise<FmKoreaHotDeal[]> {
+        try {
+            const generalItemListSelector =
+                '.li.li_best2_pop0.li_best2_hotdeal0';
+
+            const unfilteredList = await hotDealPage.evaluate(
+                (generalItemListSelector) => {
+                    const rawListOfGeneralHotDeal = Array.from<HTMLLIElement>(
+                        document.querySelectorAll<HTMLLIElement>(
+                            generalItemListSelector
+                        )
+                    );
+
+                    return rawListOfGeneralHotDeal.map((r) => {
+                        const [sellerName, productPrice, shippingCharge] =
+                            Array.from<HTMLAnchorElement>(
+                                r.querySelectorAll<HTMLAnchorElement>(
+                                    'a.strong'
+                                )
+                            ).map((a) => a.innerText.trim());
+
+                        const rawTitleAndLink =
+                            r.querySelector<HTMLAnchorElement>('h3.title > a');
+
+                        if (!rawTitleAndLink) {
+                            console.error(rawTitleAndLink);
+                            throw new Error(
+                                `failed to getting the list of title and link html element of general item list`
+                            );
+                        }
+
+                        const placeHolderMessageForInvalidLink =
+                            '페이지에 직접 접속 후 확인 필요';
+
+                        const trimAndRemoveCommentSection = (
+                            rawString: string
+                        ): string => {
+                            for (let i = rawString.length; i >= 0; i--) {
+                                if (rawString[i] === '[') {
+                                    return rawString.slice(0, i).trim();
+                                }
+                            }
+                            return rawString.trim();
+                        };
+
+                        const title = trimAndRemoveCommentSection(
+                            rawTitleAndLink.innerText
+                        );
+
+                        const link = rawTitleAndLink.getAttribute('href')
+                            ? `https://fmkorea.com${rawTitleAndLink.getAttribute(
+                                  'href'
+                              )}`
+                            : placeHolderMessageForInvalidLink;
+
+                        if (
+                            !sellerName ||
+                            !productPrice ||
+                            !shippingCharge ||
+                            !title ||
+                            link === placeHolderMessageForInvalidLink
+                        ) {
+                            throw new Error(
+                                `failed to getting general hot deal information`
+                            );
+                        }
+
+                        return {
+                            isValid:
+                                rawTitleAndLink.className.trim() ===
+                                'hotdeal_var8',
+                            title,
+                            link,
+                            detailedInfo: {
+                                sellerName,
+                                productPrice,
+                                shippingCharge,
+                            },
+                        };
+                    });
+                },
+                generalItemListSelector
+            );
+
+            return unfilteredList
+                .filter((l) => l.isValid)
+                .map<FmKoreaHotDeal>((validSet) => {
+                    const { isValid, ...otherProps } = validSet;
+                    return otherProps;
+                });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async requestDocument() {
+        const browser = await puppeteer.launch({
+            product: 'chrome',
+        });
+        console.log(`puppeteer instance is running...`);
+
+        try {
             const page = await browser.newPage();
             await page.goto(RuntimeConfig.FMKOREA_MAIN_URL);
 
@@ -102,70 +248,20 @@ export class FmKoreaHotDealScrapper {
 
             await page.goto(RuntimeConfig.FMKOREA_HOT_DEAL_URL);
 
-            const hotDealList = await page.evaluate((userAgentToUse) => {
-                const popularItemList: BasicHotDeal[] = [];
-                const generalItemList: FmKoreaHotDeal[] = [];
+            const popularHotDealList = await this.parsePopularItem(
+                page,
+                userAgentToUse
+            );
+            const generalHotDealList = await this.parseGeneralItem(page);
 
-                const popularItemSelector =
-                    userAgentToUse['sec-ch-ua-mobile'] === '?0'
-                        ? 'tr.notice_pop1 > td.title > a:not([title])'
-                        : 'li.pop1 > a[href]';
-
-                const rawPopularItemList =
-                    document.querySelectorAll(popularItemSelector);
-
-                rawPopularItemList.forEach((p) =>
-                    popularItemList.push({
-                        title:
-                            p.textContent ??
-                            '핫 딜 결과를 가져오는 도중 오류가 발생하였습니다.',
-                        link:
-                            `https://fmkorea.com${p.getAttribute('href')}` ??
-                            '핫 딜 결과를 가져오는 도중 오류가 발생하였습니다.',
-                    })
-                );
-
-                document
-                    .querySelectorAll('.li.li_best2_pop0.li_best2_hotdeal0')
-                    .forEach((p) => {
-                        const rawTitle = p.querySelector('.hotdeal_var8');
-
-                        const rawInfo: string[] = [];
-                        p.querySelectorAll('.strong').forEach((info) => {
-                            rawInfo.push(info.innerHTML);
-                        });
-
-                        const [sellerName, productPrice, shippingCharge] =
-                            rawInfo;
-
-                        generalItemList.push({
-                            title:
-                                rawTitle?.textContent
-                                    ?.trim()
-                                    .split('\t')[0]
-                                    .trim() ??
-                                '핫 딜 결과를 가져오는 도중 오류가 발생하였습니다.',
-                            link: rawTitle?.getAttribute('href')
-                                ? `https://fmkorea.com${rawTitle?.getAttribute(
-                                      'href'
-                                  )}`
-                                : '핫 딜 결과를 가져오는 도중 오류가 발생하였습니다.',
-                            detailedInfo: {
-                                sellerName,
-                                productPrice,
-                                shippingCharge,
-                            },
-                        });
-                    });
-
-                return { popularItemList, generalItemList };
-            }, userAgentToUse);
-
-            await browser.close();
-
-            return hotDealList;
+            return {
+                popularHotDealList,
+                generalHotDealList,
+            };
         } catch (e) {
             console.error(e);
+        } finally {
+            await browser.close();
         }
     }
 }

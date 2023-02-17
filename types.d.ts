@@ -16,13 +16,17 @@ export interface BasicHotDeal {
     link: string;
 }
 
-interface FmKoreaHotDeal extends BasicHotDeal {
+export interface FmKoreaPopularHotDeal extends BasicHotDeal {}
+
+export interface FmKoreaHotDeal extends BasicHotDeal {
     detailedInfo: {
         sellerName: string;
         productPrice: string;
         shippingCharge: string;
     };
 }
+
+export interface FmKoreaTotalHotDeal {}
 
 export interface DiscordCommandEnrollResponse {
     id: string;
