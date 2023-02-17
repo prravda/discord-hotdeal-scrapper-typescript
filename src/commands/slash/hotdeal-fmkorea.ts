@@ -24,8 +24,8 @@ export const HotDealFmKoreaCommand: SlashCommand = {
             .setColor(0xefff00)
             .setTitle('펨코 핫 딜 목록!')
             .setDescription('일반핫딜은 상품명/판매처/가격/배송비 입니다.')
-            .addFields({ name: ' ', value: ' ' })
             .addFields(
+                { name: ' ', value: ' ' },
                 { name: '**인기핫딜**', value: '------' },
                 ...hotDealResult.popularHotDealList.map<APIEmbedField>(
                     (deal) => {
