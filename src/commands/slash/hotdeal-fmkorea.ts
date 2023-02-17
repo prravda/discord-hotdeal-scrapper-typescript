@@ -24,9 +24,10 @@ export const HotDealFmKoreaCommand: SlashCommand = {
             const resultEmbed = new EmbedBuilder()
                 .setColor(0xefff00)
                 .setTitle('펨코 핫 딜 목록!')
-                .setDescription('일반핫딜은 상품명/판매처/가격/배송비 입니다.')
+                .setDescription(
+                    '상위 5개는 인기핫딜입니다. 그 밑으로는 일반핫딜이며, 상품명/판매처/가격/배송비 순으로 기재되어있습니다.'
+                )
                 .addFields(
-                    { name: '**인기핫딜**', value: '------' },
                     ...hotDealResult.popularHotDealList.map<APIEmbedField>(
                         (deal) => {
                             return {
@@ -37,18 +38,14 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                     )
                 )
                 .addFields(
-                    {
-                        name: '**일반핫딜**',
-                        value: '------',
-                    },
-                    ...hotDealResult.generalHotDealList.map<APIEmbedField>(
-                        (deal) => {
+                    ...hotDealResult.generalHotDealList
+                        .slice(20)
+                        .map<APIEmbedField>((deal) => {
                             return {
                                 name: `${deal.title} / ${deal.detailedInfo.sellerName} / ${deal.detailedInfo.productPrice} / ${deal.detailedInfo.shippingCharge}`,
                                 value: deal.link,
                             };
-                        }
-                    )
+                        })
                 )
                 .setFooter({
                     text: '오류제보 및 기능개선은 #봇_기능_건의 혹은 prravda#8996 로',
