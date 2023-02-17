@@ -59,10 +59,11 @@ export const HotDealFmKoreaCommand: SlashCommand = {
             if (hotDealResult) {
                 await interaction.editReply({ embeds: [resultEmbed] });
             }
-            throw new Error('error for testing');
         } catch (e) {
             console.error(e);
-            await interaction.editReply('오류 발생');
+            await interaction.editReply(
+                '정보를 가져오던 도중 오류가 발생했습니다. 관리자에게 제보해주세요!'
+            );
         }
     },
 };
