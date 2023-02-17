@@ -1,6 +1,7 @@
 import { RuntimeConfig } from '../../infra/runtime-config';
 import { FmKoreaHotDeal, FmKoreaPopularHotDeal } from '../../types';
 import puppeteer, { Page } from 'puppeteer';
+import Protocol from 'devtools-protocol';
 
 const fmKoreaHttp2Headers = {
     ':path': '/',
@@ -35,6 +36,37 @@ interface UserAgentPair {
 }
 
 export class FmKoreaHotDealScrapper {
+    private resultLogger(
+        platform: UserAgentPair['sec-ch-ua-platform'],
+        cookieList: Protocol.Network.Cookie[],
+        hotDealResult: {
+            popularHotDealList: FmKoreaPopularHotDeal[];
+            generalHotDealList: FmKoreaHotDeal[];
+        }
+    ) {
+        const credentialsToWatch = cookieList
+            .filter(
+                (cookie) =>
+                    cookie.name === 'PHPSESSID' || cookie.name === 'idntm5'
+            )
+            .map((c) => {
+                return {
+                    name: c.name,
+                    value: c.value,
+                    expiredAtRaw: c.expires,
+                    expiredAtParsed: new Date(c.expires),
+                };
+            });
+        console.log(
+            `-timestamp: ${new Date()}\n-transactionSuccess: ${Boolean(
+                hotDealResult.popularHotDealList.length !== 0 &&
+                    hotDealResult.generalHotDealList.length !== 0
+            )}\n-cookies: ${JSON.stringify(
+                credentialsToWatch
+            )}\n-platform: ${platform}`
+        );
+    }
+
     private getRandomUserAgentPair(): UserAgentPair {
         const userAgentPool = {
             iphone: 'Mozilla/5.0 (iPhone12,1; U; CPU iPhone OS 13_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1',
@@ -226,16 +258,13 @@ export class FmKoreaHotDealScrapper {
         const browser = await puppeteer.launch({
             product: 'chrome',
         });
-        console.log(`puppeteer instance is running...`);
 
         try {
             const page = await browser.newPage();
             await page.goto(RuntimeConfig.FMKOREA_MAIN_URL);
 
-            console.log(`getting credentials...`);
             const credentials = await page.cookies();
 
-            console.log(`setting up credential...`);
             const userAgentToUse = this.getRandomUserAgentPair();
 
             await page.setCookie(...credentials);
@@ -253,6 +282,17 @@ export class FmKoreaHotDealScrapper {
                 userAgentToUse
             );
             const generalHotDealList = await this.parseGeneralItem(page);
+            const cookieAfterTransaction = await page.cookies();
+
+            // logging section
+            this.resultLogger(
+                userAgentToUse['sec-ch-ua-platform'],
+                cookieAfterTransaction,
+                {
+                    popularHotDealList,
+                    generalHotDealList,
+                }
+            );
 
             return {
                 popularHotDealList,
@@ -265,3 +305,6 @@ export class FmKoreaHotDealScrapper {
         }
     }
 }
+
+const instance = new FmKoreaHotDealScrapper();
+instance.requestDocument();
