@@ -61,7 +61,7 @@ export const HotDealFmKoreaCommand: SlashCommand = {
             }
         } catch (e) {
             console.error(e);
-            await interaction.editReply({ message: '오류 발생' });
+            await interaction.editReply('오류 발생');
         }
     },
 };
