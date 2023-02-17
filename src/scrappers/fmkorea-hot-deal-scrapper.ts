@@ -99,11 +99,25 @@ export class FmKoreaHotDealScrapper {
                         popularItemListSelector
                     )
                 );
+                const refineVerboseUrl = (
+                    verboseUrl: string | null
+                ): string => {
+                    if (verboseUrl) {
+                        const extractedSrl = verboseUrl
+                            .split('?')[1]
+                            .split('&')[1]
+                            .split('=')[1];
+                        return `https://www.fmkorea.com/${extractedSrl}`;
+                    }
+                    return '접속 후 확인해 주세요.';
+                };
 
-                return listOfAnchorElement.map((a) => {
+                return listOfAnchorElement.map<FmKoreaPopularHotDeal>((a) => {
+                    const rawLink = a.getAttribute('href');
+
                     return {
                         title: a.innerText.trim(),
-                        link: `https://fmkorea.com${a.getAttribute('href')}`,
+                        link: refineVerboseUrl(rawLink),
                     };
                 });
             }, popularItemListSelector);
@@ -237,3 +251,6 @@ export class FmKoreaHotDealScrapper {
         }
     }
 }
+
+const instance = new FmKoreaHotDealScrapper();
+instance.requestDocument().then((r) => console.log(r));
