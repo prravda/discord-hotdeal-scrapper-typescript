@@ -147,7 +147,7 @@ export class FmKoreaHotDealScrapper {
 
                     const title = rawTitleAndLink.innerText
                         .trim()
-                        .replace('/\\s*\\[\\d+\\]$/', '');
+                        .replace('/\\s*\\[[^\\]]*\\]/', '');
 
                     const link = rawTitleAndLink.getAttribute('href')
                         ? `https://fmkorea.com${rawTitleAndLink.getAttribute(
