@@ -265,6 +265,3 @@ export class FmKoreaHotDealScrapper {
         }
     }
 }
-
-const test = new FmKoreaHotDealScrapper();
-test.requestDocument().then((r) => console.log(r));
