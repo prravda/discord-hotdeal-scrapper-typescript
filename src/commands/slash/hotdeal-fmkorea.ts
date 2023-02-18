@@ -25,13 +25,13 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                 .setColor(0xefff00)
                 .setTitle('펨코 핫 딜 목록!')
                 .setDescription(
-                    '상위 5개는 인기 핫 딜, 그 밑으론 일반 핫 딜 입니다. 제품명 정보를 누르면 이동합니다.'
+                    '상위 5개는 인기 핫 딜, 그 밑으론 일반 핫 딜 입니다. 제품명 밑 줄의 정보를 누르면 핫 딜 페이지로 이동합니다.'
                 )
                 .addFields(
                     ...hotDealResult.popularHotDealList.map<APIEmbedField>(
                         (deal) => {
                             return {
-                                name: `**· ${deal.title}}**`,
+                                name: `**· ${deal.title}**`,
                                 value: `[└─해당 핫 딜 바로가기](${deal.link})`,
                             };
                         }
