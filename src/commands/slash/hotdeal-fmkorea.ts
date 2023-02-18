@@ -31,8 +31,8 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                     ...hotDealResult.popularHotDealList.map<APIEmbedField>(
                         (deal) => {
                             return {
-                                name: `[${deal.title}](${deal.link})`,
-                                value: '\u200b',
+                                name: '\u200b',
+                                value: `[${deal.title}](${deal.link})`,
                             };
                         }
                     )
@@ -42,8 +42,8 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                         .slice(0, 25 - hotDealResult.popularHotDealList.length)
                         .map<APIEmbedField>((deal) => {
                             return {
-                                name: `[${deal.title}](${deal.link})`,
-                                value: `⛺️: ${deal.detailedInfo.sellerName} / 💵: ${deal.detailedInfo.productPrice} / 📦: ${deal.detailedInfo.shippingCharge}`,
+                                name: `**${deal.title}**`,
+                                value: `[⛺️: ${deal.detailedInfo.sellerName} / 💵: ${deal.detailedInfo.productPrice} / 📦: ${deal.detailedInfo.shippingCharge}](${deal.link})`,
                             };
                         })
                 )
