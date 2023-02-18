@@ -305,6 +305,3 @@ export class FmKoreaHotDealScrapper {
         }
     }
 }
-
-const instance = new FmKoreaHotDealScrapper();
-instance.requestDocument();
