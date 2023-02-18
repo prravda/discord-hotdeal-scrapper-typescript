@@ -25,7 +25,7 @@ export const HotDealPpomppuCommand: SlashCommand = {
             .addFields(
                 ...hotDealResult.map<APIEmbedField>((deal) => {
                     return {
-                        name: `${deal.title}`,
+                        name: `**· ${deal.title}**`,
                         value: `[└─해당 핫 딜 바로가기(클릭)](${deal.link})`,
                     };
                 })
