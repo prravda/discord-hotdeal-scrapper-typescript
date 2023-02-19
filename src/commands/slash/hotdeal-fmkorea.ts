@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { SlashCommand } from '../../../types';
 import { APIEmbedField } from 'discord-api-types/v10';
-import { FmKoreaHotDealScrapper } from '../../scrappers/fmkorea-hot-deal-scrapper';
+import { FmkoreaHotDealScrapper } from '../../scrappers/fmkorea-hot-deal-scrapper';
 
 export const HotDealFmKoreaCommand: SlashCommand = {
     command: new SlashCommandBuilder()
@@ -14,7 +14,7 @@ export const HotDealFmKoreaCommand: SlashCommand = {
         try {
             await interaction.deferReply();
 
-            const scrapperInstance = new FmKoreaHotDealScrapper();
+            const scrapperInstance = new FmkoreaHotDealScrapper();
             const hotDealResult = await scrapperInstance.requestDocument();
 
             if (hotDealResult === undefined) {
@@ -25,14 +25,14 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                 .setColor(0xefff00)
                 .setTitle('펨코 핫 딜 목록!')
                 .setDescription(
-                    '상위 5개는 인기핫딜입니다. 그 밑으로는 일반핫딜이며, 상품명/판매처/가격/배송비 순으로 기재되어있습니다.'
+                    '상위 5개는 인기 핫 딜, 그 밑으론 일반 핫 딜 입니다. 제품명 밑 줄의 정보를 누르면 핫 딜 페이지로 이동합니다.'
                 )
                 .addFields(
                     ...hotDealResult.popularHotDealList.map<APIEmbedField>(
                         (deal) => {
                             return {
-                                name: deal.title,
-                                value: deal.link,
+                                name: `**· ${deal.title}**`,
+                                value: `[└─해당 핫 딜 바로가기](${deal.link})`,
                             };
                         }
                     )
@@ -42,8 +42,8 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                         .slice(0, 25 - hotDealResult.popularHotDealList.length)
                         .map<APIEmbedField>((deal) => {
                             return {
-                                name: `${deal.title} / ${deal.detailedInfo.sellerName} / ${deal.detailedInfo.productPrice} / ${deal.detailedInfo.shippingCharge}`,
-                                value: deal.link,
+                                name: `**· ${deal.title}**`,
+                                value: `[└─⛺️: ${deal.detailedInfo.sellerName} / 💵: ${deal.detailedInfo.productPrice} / 📦: ${deal.detailedInfo.shippingCharge}](${deal.link})`,
                             };
                         })
                 )
