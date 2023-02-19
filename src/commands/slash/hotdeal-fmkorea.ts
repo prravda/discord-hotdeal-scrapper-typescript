@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { SlashCommand } from '../../../types';
 import { APIEmbedField } from 'discord-api-types/v10';
-import { FmKoreaHotDealScrapper } from '../../scrappers/fmkorea-hot-deal-scrapper';
+import { FmkoreaHotDealScrapper } from '../../scrappers/fmkorea-hot-deal-scrapper';
 
 export const HotDealFmKoreaCommand: SlashCommand = {
     command: new SlashCommandBuilder()
@@ -14,7 +14,7 @@ export const HotDealFmKoreaCommand: SlashCommand = {
         try {
             await interaction.deferReply();
 
-            const scrapperInstance = new FmKoreaHotDealScrapper();
+            const scrapperInstance = new FmkoreaHotDealScrapper();
             const hotDealResult = await scrapperInstance.requestDocument();
 
             if (hotDealResult === undefined) {
