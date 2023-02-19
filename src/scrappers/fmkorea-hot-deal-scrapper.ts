@@ -34,11 +34,10 @@ export class FmkoreaHotDealScrapper {
     }
 
     private getBrowserAndContextBasedOnUserAgent() {
-        const userAgent = this.getRandomUserAgent();
-
         return {
             browserToUse:
-                userAgent.defaultBrowserType === 'chromium' ? chromium : webkit,
+                // userAgent.defaultBrowserType === 'chromium' ? chromium : webkit,
+                chromium,
             browserContextOptions: {
                 ...this.getRandomUserAgent(),
                 extraHTTPHeaders: {
@@ -240,3 +239,6 @@ export class FmkoreaHotDealScrapper {
         }
     }
 }
+
+const instance = new FmkoreaHotDealScrapper();
+instance.requestDocument();
