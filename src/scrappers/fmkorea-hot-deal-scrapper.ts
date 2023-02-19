@@ -224,13 +224,15 @@ export class FmkoreaHotDealScrapper {
             );
             const generalHotDealList = await this.parseGeneralItem(page);
 
-            if (popularHotDealList && generalHotDealList) {
-                console.log(`transaction result: success`);
-                return {
-                    popularHotDealList,
-                    generalHotDealList,
-                };
+            if (!popularHotDealList || !generalHotDealList) {
+                throw new Error('An error is occurred');
             }
+
+            console.log(`transaction result: success`);
+            return {
+                popularHotDealList,
+                generalHotDealList,
+            };
         } catch (e) {
             console.error(e);
         } finally {
