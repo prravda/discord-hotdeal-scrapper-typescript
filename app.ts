@@ -11,47 +11,51 @@ import { TestDogCommand } from './src/commands/slash/test-dog';
 import { HotDealPpomppuCommand } from './src/commands/slash/hot-deal-ppomppu-command';
 import { HotDealFmKoreaCommand } from './src/commands/slash/hotdeal-fmkorea';
 
-const slashCommandList: SlashCommand[] = [
-    TestDogCommand,
-    HotDealPpomppuCommand,
-    HotDealFmKoreaCommand,
-];
-const generalCommandList: Command[] = [];
+async function bootstrap() {
+    const slashCommandList: SlashCommand[] = [
+        TestDogCommand,
+        HotDealPpomppuCommand,
+        HotDealFmKoreaCommand,
+    ];
+    const generalCommandList: Command[] = [];
 
-const commandHandler = new CommandHandler(
-    slashCommandList,
-    generalCommandList,
-    new Client({
-        intents: [Guilds, GuildMessages],
-    })
-);
+    const commandHandler = new CommandHandler(
+        slashCommandList,
+        generalCommandList,
+        new Client({
+            intents: [Guilds, GuildMessages],
+        })
+    );
 
-commandHandler.enrollCommandToDiscordInfra();
-const client = commandHandler.enrollCommandsToLocalClient();
+    await commandHandler.enrollCommandToDiscordInfra();
+    const client = commandHandler.enrollCommandsToLocalClient();
 
-client.once(Events.ClientReady, (c) => {
-    console.log(`Ready! logged in as ${c.user.tag}`);
-});
+    client.once(Events.ClientReady, (c) => {
+        console.log(`Ready! logged in as ${c.user.tag}`);
+    });
 
-client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
+    client.on(Events.InteractionCreate, async (interaction) => {
+        if (!interaction.isChatInputCommand()) return;
 
-    const command = client.slashCommands.get(interaction.commandName);
+        const command = client.slashCommands.get(interaction.commandName);
 
-    if (!command) {
-        console.error(
-            `No command matching ${interaction.commandName} was found`
-        );
-    }
+        if (!command) {
+            console.error(
+                `No command matching ${interaction.commandName} was found`
+            );
+        }
 
-    try {
-        await command.execute(interaction);
-    } catch (e) {
-        console.error(e);
-        await interaction.reply({
-            content: `An error is occurred!`,
-        });
-    }
-});
+        try {
+            await command.execute(interaction);
+        } catch (e) {
+            console.error(e);
+            await interaction.reply({
+                content: `An error is occurred!`,
+            });
+        }
+    });
 
-client.login(envList.DISCORD_TOKEN);
+    await client.login(envList.DISCORD_TOKEN);
+}
+
+bootstrap();
