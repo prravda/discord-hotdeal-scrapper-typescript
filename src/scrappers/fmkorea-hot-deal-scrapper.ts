@@ -21,8 +21,8 @@ export class FmkoreaHotDealScrapper {
     private getRandomUserAgent() {
         const deviceDescriptors = [
             devices['iPhone 11 Pro Max'],
-            devices['Galaxy S9+'],
-            devices['Desktop Chrome'],
+            // devices['Galaxy S9+'],
+            // devices['Desktop Chrome'],
             devices['Desktop Safari'],
         ];
 
@@ -34,12 +34,13 @@ export class FmkoreaHotDealScrapper {
     }
 
     private getBrowserAndContextBasedOnUserAgent() {
+        const userAgent = this.getRandomUserAgent();
         return {
             browserToUse:
-                // userAgent.defaultBrowserType === 'chromium' ? chromium : webkit,
-                chromium,
+                userAgent.defaultBrowserType === 'chromium' ? chromium : webkit,
+
             browserContextOptions: {
-                ...this.getRandomUserAgent(),
+                ...userAgent,
                 extraHTTPHeaders: {
                     ...this.getFmKoreaBasicHeader(),
                 },
