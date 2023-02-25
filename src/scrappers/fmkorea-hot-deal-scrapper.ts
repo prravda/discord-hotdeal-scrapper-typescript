@@ -21,8 +21,8 @@ export class FmkoreaHotDealScrapper {
     private getRandomUserAgent() {
         const deviceDescriptors = [
             devices['iPhone 11 Pro Max'],
-            // devices['Galaxy S9+'],
-            // devices['Desktop Chrome'],
+            devices['Galaxy S9+'],
+            devices['Desktop Chrome'],
             devices['Desktop Safari'],
         ];
 
@@ -210,13 +210,17 @@ export class FmkoreaHotDealScrapper {
                 }
             });
 
-            await page.goto(RuntimeConfig.FMKOREA_MAIN_URL);
+            await page.goto(RuntimeConfig.FMKOREA_MAIN_URL, {
+                waitUntil: 'networkidle',
+            });
 
             const credentials = await context.cookies();
 
             await context.addCookies(credentials);
 
-            await page.goto(RuntimeConfig.FMKOREA_HOT_DEAL_URL);
+            await page.goto(RuntimeConfig.FMKOREA_HOT_DEAL_URL, {
+                waitUntil: 'networkidle',
+            });
 
             const popularHotDealList = await this.parsePopularItem(
                 page,
@@ -240,3 +244,6 @@ export class FmkoreaHotDealScrapper {
         }
     }
 }
+
+const instance = new FmkoreaHotDealScrapper();
+instance.requestDocument().then((res) => console.log(res));
