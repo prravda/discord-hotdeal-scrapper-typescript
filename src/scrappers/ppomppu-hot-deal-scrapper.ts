@@ -12,8 +12,7 @@ export class PpomppuHotDealScrapper {
             const refreshedDealList = await this.parseHotDeal();
 
             if (this.latestPpomppuHotDealId === 0) {
-                this.latestPpomppuHotDealId =
-                    refreshedDealList[refreshedDealList.length - 1].id;
+                this.latestPpomppuHotDealId = refreshedDealList[0].id;
                 return refreshedDealList;
             }
 
@@ -21,8 +20,7 @@ export class PpomppuHotDealScrapper {
                 (deal) => deal.id > this.latestPpomppuHotDealId
             );
 
-            this.latestPpomppuHotDealId =
-                refreshedDealList[refreshedDealList.length - 1].id;
+            this.latestPpomppuHotDealId = refreshedDealList[0].id;
 
             return result;
         } catch (e) {
