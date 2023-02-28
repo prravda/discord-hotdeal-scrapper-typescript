@@ -3,20 +3,17 @@ import { envList } from './infra/env-config';
 import { Events, GatewayIntentBits } from 'discord.js';
 const { Guilds, GuildMessages } = GatewayIntentBits;
 
-import { Command, SlashCommand } from './types';
+import { SlashCommand } from './types';
 
 import { CommandHandler } from './infra/discord/command-handler';
 
 import { TestDogCommand } from './src/commands/slash/test-dog';
-import { HotDealFmKoreaCommand } from './src/commands/slash/hotdeal-fmkorea';
 import { ClientInstance } from './infra/discord/client-instance';
 import { ppomppuHotDealPeriodically } from './src/schedulers/ppomppu-hot-deal-periodically';
+import { fmKoreaHotDealPeriodically } from './src/schedulers/fmkorea-hot-deal-periodically';
 
 async function bootstrap() {
-    const slashCommandList: SlashCommand[] = [
-        TestDogCommand,
-        HotDealFmKoreaCommand,
-    ];
+    const slashCommandList: SlashCommand[] = [TestDogCommand];
 
     const client = ClientInstance.getClient({
         intents: [Guilds, GuildMessages],
@@ -59,6 +56,7 @@ async function bootstrap() {
 
     if (loginResult) {
         await ppomppuHotDealPeriodically();
+        await fmKoreaHotDealPeriodically();
     }
 }
 
