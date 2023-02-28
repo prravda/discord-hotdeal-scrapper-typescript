@@ -8,14 +8,13 @@ import { Command, SlashCommand } from './types';
 import { CommandHandler } from './infra/discord/command-handler';
 
 import { TestDogCommand } from './src/commands/slash/test-dog';
-import { HotDealPpomppuCommand } from './src/commands/slash/hot-deal-ppomppu-command';
 import { HotDealFmKoreaCommand } from './src/commands/slash/hotdeal-fmkorea';
 import { ClientInstance } from './infra/discord/client-instance';
+import { ppomppuHotDealPeriodically } from './src/schedulers/ppomppu-hot-deal-periodically';
 
 async function bootstrap() {
     const slashCommandList: SlashCommand[] = [
         TestDogCommand,
-        HotDealPpomppuCommand,
         HotDealFmKoreaCommand,
     ];
 
@@ -56,7 +55,11 @@ async function bootstrap() {
         }
     });
 
-    await client.login(envList.DISCORD_TOKEN);
+    const loginResult = await client.login(envList.DISCORD_TOKEN);
+
+    if (loginResult) {
+        await ppomppuHotDealPeriodically();
+    }
 }
 
 bootstrap();
