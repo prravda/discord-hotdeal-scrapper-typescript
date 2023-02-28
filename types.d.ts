@@ -16,6 +16,10 @@ export interface BasicHotDeal {
     link: string;
 }
 
+export interface PpomppuHotDeal extends BasicHotDeal {
+    id: number;
+}
+
 export interface FmKoreaPopularHotDeal extends BasicHotDeal {}
 
 export interface FmKoreaHotDeal extends BasicHotDeal {
