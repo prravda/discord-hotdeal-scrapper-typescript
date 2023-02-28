@@ -2,10 +2,34 @@ import axios from 'axios';
 import { RuntimeConfig } from '../../infra/runtime-config';
 import { JSDOM } from 'jsdom';
 import { decode } from 'iconv-lite';
-import { BasicHotDeal } from '../../types';
+import { PpomppuHotDeal } from '../../types';
 
 export class PpomppuHotDealScrapper {
-    public async requestDocument() {
+    private latestPpomppuHotDealId: number = 0;
+
+    public async getRefreshedHotDealList() {
+        try {
+            const refreshedDealList = await this.parseHotDeal();
+
+            if (this.latestPpomppuHotDealId === 0) {
+                this.latestPpomppuHotDealId =
+                    refreshedDealList[refreshedDealList.length - 1].id;
+                return refreshedDealList;
+            }
+
+            const result = refreshedDealList.filter(
+                (deal) => deal.id > this.latestPpomppuHotDealId
+            );
+
+            this.latestPpomppuHotDealId =
+                refreshedDealList[refreshedDealList.length - 1].id;
+
+            return result;
+        } catch (e) {
+            throw e;
+        }
+    }
+    private async parseHotDeal() {
         try {
             const result = await axios.request({
                 url: RuntimeConfig.PPOMPPU_HOT_DEAL_URL,
@@ -27,7 +51,7 @@ export class PpomppuHotDealScrapper {
                 ?.querySelector<HTMLTableElement>('.board_table')
                 ?.querySelectorAll<HTMLAnchorElement>('a.title:not([style])');
 
-            const dealList: BasicHotDeal[] = [];
+            const dealList: PpomppuHotDeal[] = [];
 
             if (hotDealTableLinks === undefined) {
                 throw new Error(
@@ -41,6 +65,7 @@ export class PpomppuHotDealScrapper {
                 const title = eachHotDeal.textContent;
 
                 dealList.push({
+                    id: dealLink ? Number(dealLink.split('&no=')[1]) : 0,
                     title: title ? title : '링크 접속 후 확인해주세요!',
                     link: `${baseUrl}${dealLink}`,
                 });
