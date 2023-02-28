@@ -12,25 +12,26 @@ export interface SlashCommand {
 }
 
 export interface BasicHotDeal {
+    id: number;
     title: string;
     link: string;
 }
 
-export interface PpomppuHotDeal extends BasicHotDeal {
-    id: number;
-}
+export interface PpomppuHotDeal extends BasicHotDeal {}
 
 export interface FmKoreaPopularHotDeal extends BasicHotDeal {}
 
 export interface FmKoreaHotDeal extends BasicHotDeal {
-    detailedInfo: {
-        sellerName: string;
-        productPrice: string;
-        shippingCharge: string;
-    };
+    seller: string;
+    productPrice: string;
+    shippingCharge: string;
+    category: string;
 }
 
-export interface FmKoreaTotalHotDeal {}
+export interface FmKoreaTotalHotDeal {
+    general: FmKoreaHotDeal[];
+    popular: FmKoreaPopularHotDeal[];
+}
 
 export interface DiscordCommandEnrollResponse {
     id: string;
