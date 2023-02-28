@@ -1,10 +1,66 @@
-import { chromium, webkit, devices } from 'playwright-core';
+import { chromium, devices } from 'playwright-core';
 import { RuntimeConfig } from '../../infra/runtime-config';
 import { Page } from '@playwright/test';
-import { FmKoreaHotDeal, FmKoreaPopularHotDeal } from '../../types';
+import {
+    FmKoreaHotDeal,
+    FmKoreaPopularHotDeal,
+    FmKoreaTotalHotDeal,
+} from '../../types';
 
 export class FmkoreaHotDealScrapper {
-    private readonly placeHolderOnError = '접속 후 확인해 주세요.';
+    private latestFmKoreaPopularHotDealId: number = 0;
+    private latestFmKoreaGeneralHotDealId: number = 0;
+    private readonly srlOnError = 99999;
+    private readonly textPlaceHolderOnError = '접속 후 확인해 주세요';
+
+    public async getRefreshedHotDealList(): Promise<FmKoreaTotalHotDeal> {
+        try {
+            const { popular, general } = await this.parseHotDeal();
+
+            return {
+                general: this.refreshGeneralHotDeal(general),
+                popular: this.refreshPopularHotDeal(popular),
+            };
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    private refreshGeneralHotDeal(generalHotDealList: FmKoreaHotDeal[]) {
+        if (this.latestFmKoreaGeneralHotDealId === 0) {
+            this.latestFmKoreaGeneralHotDealId =
+                generalHotDealList[generalHotDealList.length - 1].id;
+
+            return generalHotDealList;
+        }
+
+        const result = generalHotDealList.filter(
+            (deal) => deal.id > this.latestFmKoreaGeneralHotDealId
+        );
+
+        this.latestFmKoreaGeneralHotDealId =
+            generalHotDealList[generalHotDealList.length - 1].id;
+
+        return result;
+    }
+
+    private refreshPopularHotDeal(popularHotDealList: FmKoreaPopularHotDeal[]) {
+        if (this.latestFmKoreaPopularHotDealId === 0) {
+            this.latestFmKoreaPopularHotDealId =
+                popularHotDealList[popularHotDealList.length - 1].id;
+
+            return popularHotDealList;
+        }
+
+        const result = popularHotDealList.filter(
+            (deal) => deal.id > this.latestFmKoreaPopularHotDealId
+        );
+
+        this.latestFmKoreaPopularHotDealId =
+            popularHotDealList[popularHotDealList.length - 1].id;
+
+        return result;
+    }
     private getFmKoreaBasicHeader() {
         return {
             method: 'GET',
@@ -24,6 +80,11 @@ export class FmkoreaHotDealScrapper {
             devices['Galaxy S9+'],
             devices['Desktop Chrome'],
             devices['Desktop Safari'],
+            devices['iPhone 8'],
+            devices['Galaxy S8'],
+            devices['iPad (gen 7)'],
+            devices['iPhone X'],
+            devices['iPhone XR'],
         ];
 
         const randomIndex = Math.floor(
@@ -36,9 +97,7 @@ export class FmkoreaHotDealScrapper {
     private getBrowserAndContextBasedOnUserAgent() {
         const userAgent = this.getRandomUserAgent();
         return {
-            browserToUse:
-                userAgent.defaultBrowserType === 'chromium' ? chromium : webkit,
-
+            browserToUse: chromium,
             browserContextOptions: {
                 ...userAgent,
                 extraHTTPHeaders: {
@@ -49,16 +108,16 @@ export class FmkoreaHotDealScrapper {
         };
     }
 
-    private refineVerboseUrlOfPopularHotDeal(
+    private extractSrlFromHrefOfPopularHotDeal(
         verboseUrl: string | null
-    ): string {
+    ): number {
         if (verboseUrl) {
             const extractedSrl = verboseUrl
                 .split('document_srl=')[1]
                 .split('&')[0];
-            return `https://www.fmkorea.com/${extractedSrl}`;
+            return Number(extractedSrl);
         }
-        return this.placeHolderOnError;
+        return this.srlOnError;
     }
 
     private refineVerboseTitleOfPopularHotDeal(
@@ -67,7 +126,7 @@ export class FmkoreaHotDealScrapper {
         if (verboseTitle) {
             return verboseTitle.trim();
         }
-        return this.placeHolderOnError;
+        return this.textPlaceHolderOnError;
     }
 
     private async parsePopularItem(hotDealPage: Page, isMobile: boolean) {
@@ -92,23 +151,28 @@ export class FmkoreaHotDealScrapper {
         );
 
         return rawPopularHotDealList.map<FmKoreaPopularHotDeal>((rawData) => {
+            const srl = this.extractSrlFromHrefOfPopularHotDeal(rawData.link);
+
             return {
+                id: srl,
                 title: this.refineVerboseTitleOfPopularHotDeal(rawData.title),
-                link: this.refineVerboseUrlOfPopularHotDeal(rawData.link),
+                link: `https://www.fmkorea.com/${srl}`,
             };
         });
     }
 
-    private refineVerboseUrlOfGeneralHotDeal(
-        rawUrl: string | null | undefined
-    ): string {
-        if (rawUrl) {
-            return `https://fmkorea.com${rawUrl}`;
+    private extractSrlFromHrefOfGeneralHotDeal(
+        endpointWithSlash: string | null | undefined
+    ): number {
+        if (endpointWithSlash) {
+            return Number(endpointWithSlash.replace('/', ''));
         }
-        return this.placeHolderOnError;
+        return this.srlOnError;
     }
 
-    private refineVerboseTitleOfGeneralHotDeal(rawTitle: string | null) {
+    private refineVerboseTitleOfGeneralHotDeal(
+        rawTitle: string | null | undefined
+    ) {
         if (rawTitle) {
             for (let i = rawTitle.length; i >= 0; i--) {
                 if (rawTitle[i] === '[') {
@@ -117,17 +181,18 @@ export class FmkoreaHotDealScrapper {
             }
             return rawTitle.trim();
         }
-        return this.placeHolderOnError;
+        return this.textPlaceHolderOnError;
     }
 
     private async parseGeneralItem(
-        hotDealPage: Page
+        hotDealPage: Page,
+        isMobile: boolean
     ): Promise<FmKoreaHotDeal[]> {
         const generalItemListSelector = '.li.li_best2_pop0.li_best2_hotdeal0';
 
         const rawGeneralHotDealList = await hotDealPage.$$eval(
             generalItemListSelector,
-            (eachItem) => {
+            (eachItem, isMobile) => {
                 return eachItem.map((liTag) => {
                     const [rawSellerName, rawProductPrice, rawShippingCharge] =
                         Array.from(liTag.querySelectorAll('a.strong')).map(
@@ -136,59 +201,61 @@ export class FmkoreaHotDealScrapper {
 
                     const rawTitleAndLink = liTag.querySelector('h3.title > a');
 
-                    if (!rawTitleAndLink) {
-                        throw new Error(
-                            'Failed to get general hot deal information - title and link from fmkorea.com'
-                        );
-                    }
+                    const categorySelector = isMobile
+                        ? 'span.category'
+                        : 'span.category > a';
+
+                    const rawCategory = liTag.querySelector(categorySelector);
 
                     return {
                         isValid:
-                            rawTitleAndLink.className.trim() === 'hotdeal_var8',
-                        title: rawTitleAndLink.textContent,
-                        link: rawTitleAndLink.getAttribute('href'),
-                        detailedInfo: {
-                            sellerName: rawSellerName,
-                            productPrice: rawProductPrice,
-                            shippingCharge: rawShippingCharge,
-                        },
+                            rawTitleAndLink?.className?.trim() ===
+                            'hotdeal_var8',
+                        title: rawTitleAndLink?.textContent,
+                        link:
+                            rawTitleAndLink?.getAttribute('href') ??
+                            `/${this.srlOnError}`,
+                        seller: rawSellerName,
+                        productPrice: rawProductPrice,
+                        shippingCharge: rawShippingCharge,
+                        category: rawCategory?.textContent
+                            ?.trim()
+                            .replace('/', '')
+                            .trim(),
                     };
                 });
-            }
+            },
+            isMobile
         );
 
         return rawGeneralHotDealList
             .filter((deal) => deal.isValid)
             .map<FmKoreaHotDeal>((validDeal) => {
-                const { isValid, ...otherProps } = validDeal;
-                const { title, link, detailedInfo } = otherProps;
+                const {
+                    title,
+                    link,
+                    seller,
+                    productPrice,
+                    shippingCharge,
+                    category,
+                } = validDeal;
 
-                if (
-                    !detailedInfo ||
-                    !detailedInfo.sellerName ||
-                    !detailedInfo.productPrice ||
-                    !detailedInfo.shippingCharge ||
-                    !title ||
-                    !link
-                ) {
-                    throw new Error(
-                        'Failed to extract information from general hot deal list'
-                    );
-                }
+                const srl = this.extractSrlFromHrefOfGeneralHotDeal(link);
 
                 return {
+                    id: srl,
                     title: this.refineVerboseTitleOfGeneralHotDeal(title),
-                    link: this.refineVerboseUrlOfGeneralHotDeal(link),
-                    detailedInfo: {
-                        sellerName: detailedInfo.sellerName,
-                        productPrice: detailedInfo.productPrice,
-                        shippingCharge: detailedInfo.shippingCharge,
-                    },
+                    link: `https://www.fmkorea.com/${srl}`,
+                    seller: seller ?? this.textPlaceHolderOnError,
+                    productPrice: productPrice ?? this.textPlaceHolderOnError,
+                    shippingCharge:
+                        shippingCharge ?? this.textPlaceHolderOnError,
+                    category: category ?? this.textPlaceHolderOnError,
                 };
             });
     }
 
-    public async requestDocument() {
+    private async parseHotDeal(): Promise<FmKoreaTotalHotDeal> {
         const { browserToUse, browserContextOptions } =
             this.getBrowserAndContextBasedOnUserAgent();
         const browser = await browserToUse.launch();
@@ -210,35 +277,35 @@ export class FmkoreaHotDealScrapper {
                 }
             });
 
-            await page.goto(RuntimeConfig.FMKOREA_MAIN_URL, {
-                waitUntil: 'networkidle',
-            });
+            await page.goto(RuntimeConfig.FMKOREA_MAIN_URL);
 
             const credentials = await context.cookies();
 
             await context.addCookies(credentials);
 
-            await page.goto(RuntimeConfig.FMKOREA_HOT_DEAL_URL, {
-                waitUntil: 'networkidle',
-            });
+            await page.goto(RuntimeConfig.FMKOREA_HOT_DEAL_URL);
 
             const popularHotDealList = await this.parsePopularItem(
                 page,
                 browserContextOptions.isMobile
             );
-            const generalHotDealList = await this.parseGeneralItem(page);
+            const generalHotDealList = await this.parseGeneralItem(
+                page,
+                browserContextOptions.isMobile
+            );
 
             if (!popularHotDealList || !generalHotDealList) {
                 throw new Error('An error is occurred');
             }
 
             console.log(`transaction result: success`);
+
             return {
-                popularHotDealList,
-                generalHotDealList,
+                popular: popularHotDealList,
+                general: generalHotDealList,
             };
         } catch (e) {
-            console.error(e);
+            throw e;
         } finally {
             await browser.close();
         }
