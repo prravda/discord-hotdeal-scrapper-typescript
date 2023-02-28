@@ -1,6 +1,6 @@
 import { envList } from './infra/env-config';
 
-import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { Events, GatewayIntentBits } from 'discord.js';
 const { Guilds, GuildMessages } = GatewayIntentBits;
 
 import { Command, SlashCommand } from './types';
@@ -10,6 +10,7 @@ import { CommandHandler } from './infra/discord/command-handler';
 import { TestDogCommand } from './src/commands/slash/test-dog';
 import { HotDealPpomppuCommand } from './src/commands/slash/hot-deal-ppomppu-command';
 import { HotDealFmKoreaCommand } from './src/commands/slash/hotdeal-fmkorea';
+import { ClientInstance } from './infra/discord/client-instance';
 
 async function bootstrap() {
     const slashCommandList: SlashCommand[] = [
@@ -17,30 +18,31 @@ async function bootstrap() {
         HotDealPpomppuCommand,
         HotDealFmKoreaCommand,
     ];
-    const generalCommandList: Command[] = [];
 
-    const commandHandler = new CommandHandler(
-        slashCommandList,
-        generalCommandList,
-        new Client({
-            intents: [Guilds, GuildMessages],
-        })
-    );
+    const client = ClientInstance.getClient({
+        intents: [Guilds, GuildMessages],
+    });
 
-    await commandHandler.enrollCommandToDiscordInfra();
-    const client = commandHandler.enrollCommandsToLocalClient();
+    const commandHandler = new CommandHandler(slashCommandList);
+    await commandHandler.enrollCommandsToDiscordInfra();
+
+    const commandSet = commandHandler.getCommandCollection();
 
     client.once(Events.ClientReady, (c) => {
-        console.log(`Ready! logged in as ${c.user.tag}`);
+        try {
+            console.log(`Ready! logged in as ${c.user.tag}`);
+        } catch (e) {
+            throw e;
+        }
     });
 
     client.on(Events.InteractionCreate, async (interaction) => {
         if (!interaction.isChatInputCommand()) return;
 
-        const command = client.slashCommands.get(interaction.commandName);
+        const command = commandSet.get(interaction.commandName);
 
         if (!command) {
-            console.error(
+            throw new Error(
                 `No command matching ${interaction.commandName} was found`
             );
         }
@@ -48,7 +50,6 @@ async function bootstrap() {
         try {
             await command.execute(interaction);
         } catch (e) {
-            console.error(e);
             await interaction.reply({
                 content: `An error is occurred!`,
             });
