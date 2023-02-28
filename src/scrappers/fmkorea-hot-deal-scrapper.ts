@@ -28,8 +28,7 @@ export class FmkoreaHotDealScrapper {
 
     private refreshGeneralHotDeal(generalHotDealList: FmKoreaHotDeal[]) {
         if (this.latestFmKoreaGeneralHotDealId === 0) {
-            this.latestFmKoreaGeneralHotDealId =
-                generalHotDealList[generalHotDealList.length - 1].id;
+            this.latestFmKoreaGeneralHotDealId = generalHotDealList[0].id;
 
             return generalHotDealList;
         }
@@ -38,16 +37,14 @@ export class FmkoreaHotDealScrapper {
             (deal) => deal.id > this.latestFmKoreaGeneralHotDealId
         );
 
-        this.latestFmKoreaGeneralHotDealId =
-            generalHotDealList[generalHotDealList.length - 1].id;
+        this.latestFmKoreaGeneralHotDealId = generalHotDealList[0].id;
 
         return result;
     }
 
     private refreshPopularHotDeal(popularHotDealList: FmKoreaPopularHotDeal[]) {
         if (this.latestFmKoreaPopularHotDealId === 0) {
-            this.latestFmKoreaPopularHotDealId =
-                popularHotDealList[popularHotDealList.length - 1].id;
+            this.latestFmKoreaPopularHotDealId = popularHotDealList[0].id;
 
             return popularHotDealList;
         }
@@ -56,8 +53,7 @@ export class FmkoreaHotDealScrapper {
             (deal) => deal.id > this.latestFmKoreaPopularHotDealId
         );
 
-        this.latestFmKoreaPopularHotDealId =
-            popularHotDealList[popularHotDealList.length - 1].id;
+        this.latestFmKoreaPopularHotDealId = popularHotDealList[0].id;
 
         return result;
     }
