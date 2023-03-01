@@ -6,7 +6,7 @@
   "scripts": {
     "start:dev": "npx nodemon app.ts",
     "start:prod": "pm2 start app.ts --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx jest"
   },
   "repository": {
     "type": "git",
