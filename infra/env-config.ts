@@ -6,13 +6,19 @@ dotenv.config();
 const envListSchema = Joi.object({
     APP_ID: Joi.string().required().description('discord bot application id'),
     PUBLIC_KEY: Joi.string().required().description('discord bot public key'),
+
     CLIENT_ID: Joi.string().required().description('discord bot client id'),
     CLIENT_SECRET: Joi.string()
         .required()
         .description('discord bot client secrete credential'),
+
     GUILD_ID: Joi.string()
         .required()
         .description("a guild's id to run this bot"),
+    HOT_DEAL_CHANNEL_ID: Joi.string()
+        .required()
+        .description('a id of hot deal channel of this guild'),
+
     DISCORD_TOKEN: Joi.string()
         .required()
         .description('discord bot application token'),
@@ -41,6 +47,7 @@ export const envList = {
     CLIENT_ID: afterValidate.CLIENT_ID as string,
     CLIENT_SECRET: afterValidate.CLIENT_SECRET as string,
     GUILD_ID: afterValidate.GUILD_ID as string,
+    HOT_DEAL_CHANNEL_ID: afterValidate.HOT_DEAL_CHANNEL_ID as string,
     DISCORD_TOKEN: afterValidate.DISCORD_TOKEN as string,
     DISCORD_API_VERSION: afterValidate.DISCORD_API_VERSION as string,
     PORT: afterValidate.PORT as number,
