@@ -9,7 +9,8 @@ import {
 import { LRUCache } from '../../infra/lru-cache';
 
 export class FmkoreaHotDealScrapper {
-    private LRUCachePopularHotDeal = new LRUCache<FmKoreaPopularHotDeal>();
+    private LRUCacheForFmKoreaPopularHotDeal =
+        new LRUCache<FmKoreaPopularHotDeal>();
     private latestFmKoreaGeneralHotDealId: number = 0;
     private readonly srlOnError = 99999;
     private readonly textPlaceHolderOnError = '접속 후 확인해 주세요';
@@ -29,12 +30,13 @@ export class FmkoreaHotDealScrapper {
     protected refreshPopularHotDeal(
         popularHotDealList: FmKoreaPopularHotDeal[]
     ) {
-        if (this.LRUCachePopularHotDeal.size() === 0) {
+        if (this.LRUCacheForFmKoreaPopularHotDeal.size() === 0) {
             popularHotDealList.forEach((deal) => {
-                const hashKey = this.LRUCachePopularHotDeal.createHash(
-                    `${deal.id}-${deal.title}`
-                );
-                this.LRUCachePopularHotDeal.set(hashKey, deal);
+                const hashKey =
+                    this.LRUCacheForFmKoreaPopularHotDeal.createHash(
+                        `${deal.id}-${deal.title}`
+                    );
+                this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
             });
 
             return popularHotDealList;
@@ -42,18 +44,18 @@ export class FmkoreaHotDealScrapper {
 
         const result = popularHotDealList.filter(
             (deal) =>
-                this.LRUCachePopularHotDeal.get(
-                    this.LRUCachePopularHotDeal.createHash(
+                this.LRUCacheForFmKoreaPopularHotDeal.get(
+                    this.LRUCacheForFmKoreaPopularHotDeal.createHash(
                         `${deal.id}-${deal.title}`
                     )
                 ) === null
         );
 
         result.forEach((deal) => {
-            const hashKey = this.LRUCachePopularHotDeal.createHash(
+            const hashKey = this.LRUCacheForFmKoreaPopularHotDeal.createHash(
                 `${deal.id}-${deal.title}`
             );
-            this.LRUCachePopularHotDeal.set(hashKey, deal);
+            this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
         });
 
         return result;
