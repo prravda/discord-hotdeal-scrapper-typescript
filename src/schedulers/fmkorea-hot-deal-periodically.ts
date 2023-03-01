@@ -1,6 +1,7 @@
 import { ClientInstance } from '../../infra/discord/client-instance';
 import { APIEmbedField, EmbedBuilder } from 'discord.js';
 import { FmkoreaHotDealScrapper } from '../scrappers/fmkorea-hot-deal-scrapper';
+import { envList } from '../../infra/env-config';
 
 export const fmKoreaHotDealPeriodically = async () => {
     try {
@@ -12,7 +13,7 @@ export const fmKoreaHotDealPeriodically = async () => {
                 await fmKoreaScrapper.getRefreshedHotDealList();
 
             const hotDealBroadcastChannel = await client.channels.fetch(
-                '1079966776735060028'
+                envList.HOT_DEAL_CHANNEL_ID
             );
 
             if (
@@ -25,7 +26,7 @@ export const fmKoreaHotDealPeriodically = async () => {
                     .setDescription(
                         `${new Date().toLocaleTimeString('ko-KR', {
                             timeZone: 'Asia/Seoul',
-                        })} 기준 펨코에서 갱신된 핫 딜 목록입니다. 갱신은 약 45분에 한 번씩 이뤄집니다. 제목과 링크만 있는 것은 인기 핫 딜, 그 외엔 일반 핫 딜 입니다. 제품명 밑 줄의 정보를 누르면 핫 딜 페이지로 이동합니다.`
+                        })} 기준 펨코에서 갱신된 핫 딜 목록입니다.`
                     )
                     .setFooter({
                         text: '오류제보 및 기능개선은 #봇_기능_건의 혹은 prravda#8996 로',
@@ -36,7 +37,7 @@ export const fmKoreaHotDealPeriodically = async () => {
                         ...popular.map<APIEmbedField>((deal) => {
                             return {
                                 name: `**· ${deal.title}**`,
-                                value: `[└─해당 핫 딜 바로가기](${deal.link})`,
+                                value: `[  └─해당 핫 딜 바로가기(클릭)](${deal.link})`,
                             };
                         })
                     );
@@ -48,8 +49,8 @@ export const fmKoreaHotDealPeriodically = async () => {
                             .slice(0, 25 - popular.length)
                             .map<APIEmbedField>((deal) => {
                                 return {
-                                    name: `**· ${deal.title}**`,
-                                    value: `[└─⛺️: ${deal.seller} / 💵: ${deal.productPrice} / 📦: ${deal.shippingCharge} / 🧩: ${deal.category}](${deal.link})`,
+                                    name: `**·[${deal.category}]${deal.title}**`,
+                                    value: `[  └─⛺a: ${deal.seller} / 💵: ${deal.productPrice} / 📦: ${deal.shippingCharge} / 바로가기(클릭)](${deal.link})`,
                                 };
                             })
                     );
