@@ -6,13 +6,14 @@ import {
     FmKoreaPopularHotDeal,
     FmKoreaTotalHotDeal,
 } from '../../types';
+import { LRUCache } from '../../infra/lru-cache';
 
 export class FmkoreaHotDealScrapper {
-    private latestFmKoreaPopularHotDealId: number = 0;
+    private LRUCacheForFmKoreaPopularHotDeal =
+        new LRUCache<FmKoreaPopularHotDeal>();
     private latestFmKoreaGeneralHotDealId: number = 0;
     private readonly srlOnError = 99999;
     private readonly textPlaceHolderOnError = '접속 후 확인해 주세요';
-
     public async getRefreshedHotDealList(): Promise<FmKoreaTotalHotDeal> {
         try {
             const { popular, general } = await this.parseHotDeal();
@@ -26,6 +27,40 @@ export class FmkoreaHotDealScrapper {
         }
     }
 
+    protected refreshPopularHotDeal(
+        popularHotDealList: FmKoreaPopularHotDeal[]
+    ) {
+        if (this.LRUCacheForFmKoreaPopularHotDeal.size() === 0) {
+            popularHotDealList.forEach((deal) => {
+                const hashKey =
+                    this.LRUCacheForFmKoreaPopularHotDeal.createHash(
+                        `${deal.id}-${deal.title}`
+                    );
+                this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
+            });
+
+            return popularHotDealList;
+        }
+
+        const result = popularHotDealList.filter(
+            (deal) =>
+                this.LRUCacheForFmKoreaPopularHotDeal.get(
+                    this.LRUCacheForFmKoreaPopularHotDeal.createHash(
+                        `${deal.id}-${deal.title}`
+                    )
+                ) === null
+        );
+
+        result.forEach((deal) => {
+            const hashKey = this.LRUCacheForFmKoreaPopularHotDeal.createHash(
+                `${deal.id}-${deal.title}`
+            );
+            this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
+        });
+
+        return result;
+    }
+
     private refreshGeneralHotDeal(generalHotDealList: FmKoreaHotDeal[]) {
         if (this.latestFmKoreaGeneralHotDealId === 0) {
             this.latestFmKoreaGeneralHotDealId = generalHotDealList[0].id;
@@ -37,46 +72,11 @@ export class FmkoreaHotDealScrapper {
             (deal) => deal.id > this.latestFmKoreaGeneralHotDealId
         );
 
-        console.log(
-            `[fmkorea][general] refrehsedRaw: ${JSON.stringify(
-                generalHotDealList
-            )} | prevLatestId: ${
-                this.latestFmKoreaGeneralHotDealId
-            } | | currentLatestId: ${
-                generalHotDealList[0].id
-            } | refreshedFiltered: ${JSON.stringify(result)}`
-        );
-
         this.latestFmKoreaGeneralHotDealId = generalHotDealList[0].id;
 
         return result;
     }
 
-    private refreshPopularHotDeal(popularHotDealList: FmKoreaPopularHotDeal[]) {
-        if (this.latestFmKoreaPopularHotDealId === 0) {
-            this.latestFmKoreaPopularHotDealId = popularHotDealList[0].id;
-
-            return popularHotDealList;
-        }
-
-        const result = popularHotDealList.filter(
-            (deal) => deal.id > this.latestFmKoreaPopularHotDealId
-        );
-
-        console.log(
-            `[fmkorea][popular] refrehsedRaw: ${JSON.stringify(
-                popularHotDealList
-            )} | prevLatestId: ${
-                this.latestFmKoreaPopularHotDealId
-            } | | currentLatestId: ${
-                popularHotDealList[0].id
-            } | refreshedFiltered: ${JSON.stringify(result)}`
-        );
-
-        this.latestFmKoreaPopularHotDealId = popularHotDealList[0].id;
-
-        return result;
-    }
     private getFmKoreaBasicHeader() {
         return {
             method: 'GET',

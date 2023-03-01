@@ -3,37 +3,47 @@ import { RuntimeConfig } from '../../infra/runtime-config';
 import { JSDOM } from 'jsdom';
 import { decode } from 'iconv-lite';
 import { PpomppuHotDeal } from '../../types';
+import { LRUCache } from '../../infra/lru-cache';
 
 export class PpomppuHotDealScrapper {
-    private latestPpomppuHotDealId: number = 0;
+    private LRUCacheForPpomppuPopularHotDeal = new LRUCache<PpomppuHotDeal>();
+
+    protected refreshPopularHotDeal(popularHotDealList: PpomppuHotDeal[]) {
+        if (this.LRUCacheForPpomppuPopularHotDeal.size() === 0) {
+            popularHotDealList.forEach((deal) => {
+                const hashKey =
+                    this.LRUCacheForPpomppuPopularHotDeal.createHash(
+                        `${deal.id}-${deal.title}`
+                    );
+                this.LRUCacheForPpomppuPopularHotDeal.set(hashKey, deal);
+            });
+
+            return popularHotDealList;
+        }
+
+        const result = popularHotDealList.filter(
+            (deal) =>
+                this.LRUCacheForPpomppuPopularHotDeal.get(
+                    this.LRUCacheForPpomppuPopularHotDeal.createHash(
+                        `${deal.id}-${deal.title}`
+                    )
+                ) === null
+        );
+
+        result.forEach((deal) => {
+            const hashKey = this.LRUCacheForPpomppuPopularHotDeal.createHash(
+                `${deal.id}-${deal.title}`
+            );
+            this.LRUCacheForPpomppuPopularHotDeal.set(hashKey, deal);
+        });
+
+        return result;
+    }
 
     public async getRefreshedHotDealList() {
         try {
             const refreshedDealList = await this.parseHotDeal();
-
-            if (this.latestPpomppuHotDealId === 0) {
-                this.latestPpomppuHotDealId = refreshedDealList[0].id;
-
-                return refreshedDealList;
-            }
-
-            const result = refreshedDealList.filter(
-                (deal) => deal.id > this.latestPpomppuHotDealId
-            );
-
-            console.log(
-                `[ppomppu][popular] refrehsedRaw: ${JSON.stringify(
-                    refreshedDealList
-                )} | prevLatestId: ${
-                    this.latestPpomppuHotDealId
-                } | | currentLatestId: ${
-                    refreshedDealList[0].id
-                } | refreshedFiltered: ${JSON.stringify(result)}`
-            );
-
-            this.latestPpomppuHotDealId = refreshedDealList[0].id;
-
-            return result;
+            return this.refreshPopularHotDeal(refreshedDealList);
         } catch (e) {
             throw e;
         }
