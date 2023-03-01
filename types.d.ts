@@ -21,7 +21,7 @@ export interface PpomppuHotDeal extends BasicHotDeal {}
 
 export interface FmKoreaPopularHotDeal extends BasicHotDeal {}
 
-export interface FmKoreaHotDeal extends BasicHotDeal {
+export interface FmKoreaGeneralHotDeal extends BasicHotDeal {
     seller: string;
     productPrice: string;
     shippingCharge: string;
@@ -29,7 +29,7 @@ export interface FmKoreaHotDeal extends BasicHotDeal {
 }
 
 export interface FmKoreaTotalHotDeal {
-    general: FmKoreaHotDeal[];
+    general: FmKoreaGeneralHotDeal[];
     popular: FmKoreaPopularHotDeal[];
 }
 

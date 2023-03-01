@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 export class LRUCache<T> {
     private values: Map<string, T> = new Map<string, T>();
-    private maxEntries: number = 30;
+    private maxEntries: number = 50;
 
     public createHash(data: string) {
         return crypto

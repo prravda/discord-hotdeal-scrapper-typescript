@@ -1,6 +1,7 @@
 import { PpomppuHotDealScrapper } from '../scrappers/ppomppu-hot-deal-scrapper';
 import { ClientInstance } from '../../infra/discord/client-instance';
 import { APIEmbedField, EmbedBuilder } from 'discord.js';
+import { envList } from '../../infra/env-config';
 
 export const ppomppuHotDealPeriodically = async () => {
     try {
@@ -12,7 +13,7 @@ export const ppomppuHotDealPeriodically = async () => {
                 await ppomppuScrapper.getRefreshedHotDealList();
 
             const hotDealBroadcastChannel = await client.channels.fetch(
-                '1079966776735060028'
+                envList.HOT_DEAL_CHANNEL_ID
             );
 
             if (
@@ -27,7 +28,7 @@ export const ppomppuHotDealPeriodically = async () => {
                     .setDescription(
                         `${new Date().toLocaleTimeString('ko-KR', {
                             timeZone: 'Asia/Seoul',
-                        })} 기준 뽐뿌에서 갱신된 핫 딜 목록입니다. 갱신은 약 15분에 한 번씩 이뤄집니다.`
+                        })} 기준 뽐뿌에서 갱신된 핫 딜 목록입니다.`
                     )
                     .addFields(
                         ...refreshedDealList.map<APIEmbedField>((deal) => {
