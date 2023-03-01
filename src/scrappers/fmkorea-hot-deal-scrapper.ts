@@ -37,6 +37,16 @@ export class FmkoreaHotDealScrapper {
             (deal) => deal.id > this.latestFmKoreaGeneralHotDealId
         );
 
+        console.log(
+            `[fmkorea][general] refrehsedRaw: ${JSON.stringify(
+                generalHotDealList
+            )} | prevLatestId: ${
+                this.latestFmKoreaGeneralHotDealId
+            } | | currentLatestId: ${
+                generalHotDealList[0].id
+            } | refreshedFiltered: ${JSON.stringify(result)}`
+        );
+
         this.latestFmKoreaGeneralHotDealId = generalHotDealList[0].id;
 
         return result;
@@ -51,6 +61,16 @@ export class FmkoreaHotDealScrapper {
 
         const result = popularHotDealList.filter(
             (deal) => deal.id > this.latestFmKoreaPopularHotDealId
+        );
+
+        console.log(
+            `[fmkorea][popular] refrehsedRaw: ${JSON.stringify(
+                popularHotDealList
+            )} | prevLatestId: ${
+                this.latestFmKoreaPopularHotDealId
+            } | | currentLatestId: ${
+                popularHotDealList[0].id
+            } | refreshedFiltered: ${JSON.stringify(result)}`
         );
 
         this.latestFmKoreaPopularHotDealId = popularHotDealList[0].id;
@@ -72,15 +92,42 @@ export class FmkoreaHotDealScrapper {
     }
     private getRandomUserAgent() {
         const deviceDescriptors = [
-            devices['iPhone 11 Pro Max'],
-            devices['Galaxy S9+'],
             devices['Desktop Chrome'],
+            devices['Desktop Chrome HiDPI'],
+
+            devices['Desktop Edge'],
+            devices['Desktop Edge HiDPI'],
+
             devices['Desktop Safari'],
-            devices['iPhone 8'],
+
             devices['Galaxy S8'],
-            devices['iPad (gen 7)'],
+            devices['Galaxy S9+'],
+
+            devices['iPhone 8'],
+            devices['iPhone 8 Plus'],
+
+            devices['iPhone SE'],
+
             devices['iPhone X'],
             devices['iPhone XR'],
+
+            devices['iPhone 11'],
+            devices['iPhone 11 Pro'],
+            devices['iPhone 11 Pro Max'],
+
+            devices['iPhone 12'],
+            devices['iPhone 12 Mini'],
+            devices['iPhone 12 Pro'],
+            devices['iPhone 12 Pro Max'],
+
+            devices['iPhone 13'],
+            devices['iPhone 13 Mini'],
+            devices['iPhone 13 Pro'],
+            devices['iPhone 13 Pro Max'],
+
+            devices['iPad (gen 6)'],
+            devices['iPad (gen 7)'],
+            devices['iPad Mini'],
         ];
 
         const randomIndex = Math.floor(
@@ -264,7 +311,7 @@ export class FmkoreaHotDealScrapper {
                 const header = await req.allHeaders();
                 if (header['cookie'] && header['cookie'].includes('idntm5')) {
                     console.log(
-                        `fmkorea transaction watcher:: idntm5 value: ${
+                        `[fmkorea][credential] idntm5 value: ${
                             header['cookie'].split('idntm5=')[1].split(';')[0]
                         } / timestamp: ${new Date()} / user-agent: ${
                             header['user-agent']

@@ -13,11 +13,22 @@ export class PpomppuHotDealScrapper {
 
             if (this.latestPpomppuHotDealId === 0) {
                 this.latestPpomppuHotDealId = refreshedDealList[0].id;
+
                 return refreshedDealList;
             }
 
             const result = refreshedDealList.filter(
                 (deal) => deal.id > this.latestPpomppuHotDealId
+            );
+
+            console.log(
+                `[ppomppu][popular] refrehsedRaw: ${JSON.stringify(
+                    refreshedDealList
+                )} | prevLatestId: ${
+                    this.latestPpomppuHotDealId
+                } | | currentLatestId: ${
+                    refreshedDealList[0].id
+                } | refreshedFiltered: ${JSON.stringify(result)}`
             );
 
             this.latestPpomppuHotDealId = refreshedDealList[0].id;
