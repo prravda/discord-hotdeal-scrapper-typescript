@@ -2,7 +2,7 @@ import { chromium, devices } from 'playwright-core';
 import { RuntimeConfig } from '../../infra/runtime-config';
 import { Page } from '@playwright/test';
 import {
-    FmKoreaHotDeal,
+    FmKoreaGeneralHotDeal,
     FmKoreaPopularHotDeal,
     FmKoreaTotalHotDeal,
 } from '../../types';
@@ -11,9 +11,11 @@ import { LRUCache } from '../../infra/lru-cache';
 export class FmkoreaHotDealScrapper {
     private LRUCacheForFmKoreaPopularHotDeal =
         new LRUCache<FmKoreaPopularHotDeal>();
-    private latestFmKoreaGeneralHotDealId: number = 0;
+    private LRUCacheForFmKoreaGeneralHotDeal =
+        new LRUCache<FmKoreaGeneralHotDeal>();
     private readonly srlOnError = 99999;
     private readonly textPlaceHolderOnError = '접속 후 확인해 주세요';
+
     public async getRefreshedHotDealList(): Promise<FmKoreaTotalHotDeal> {
         try {
             const { popular, general } = await this.parseHotDeal();
@@ -61,18 +63,36 @@ export class FmkoreaHotDealScrapper {
         return result;
     }
 
-    private refreshGeneralHotDeal(generalHotDealList: FmKoreaHotDeal[]) {
-        if (this.latestFmKoreaGeneralHotDealId === 0) {
-            this.latestFmKoreaGeneralHotDealId = generalHotDealList[0].id;
+    protected refreshGeneralHotDeal(
+        generalHotDealList: FmKoreaGeneralHotDeal[]
+    ) {
+        if (this.LRUCacheForFmKoreaGeneralHotDeal.size() === 0) {
+            generalHotDealList.forEach((deal) => {
+                const hashKey =
+                    this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
+                        `${deal.id}-${deal.title}`
+                    );
+                this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
+            });
 
             return generalHotDealList;
         }
 
         const result = generalHotDealList.filter(
-            (deal) => deal.id > this.latestFmKoreaGeneralHotDealId
+            (deal) =>
+                this.LRUCacheForFmKoreaGeneralHotDeal.get(
+                    this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
+                        `${deal.id}-${deal.title}`
+                    )
+                ) === null
         );
 
-        this.latestFmKoreaGeneralHotDealId = generalHotDealList[0].id;
+        result.forEach((deal) => {
+            const hashKey = this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
+                `${deal.id}-${deal.title}`
+            );
+            this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
+        });
 
         return result;
     }
@@ -230,7 +250,7 @@ export class FmkoreaHotDealScrapper {
     private async parseGeneralItem(
         hotDealPage: Page,
         isMobile: boolean
-    ): Promise<FmKoreaHotDeal[]> {
+    ): Promise<FmKoreaGeneralHotDeal[]> {
         const generalItemListSelector = '.li.li_best2_pop0.li_best2_hotdeal0';
 
         const rawGeneralHotDealList = await hotDealPage.$$eval(
@@ -273,7 +293,7 @@ export class FmkoreaHotDealScrapper {
 
         return rawGeneralHotDealList
             .filter((deal) => deal.isValid)
-            .map<FmKoreaHotDeal>((validDeal) => {
+            .map<FmKoreaGeneralHotDeal>((validDeal) => {
                 const {
                     title,
                     link,
