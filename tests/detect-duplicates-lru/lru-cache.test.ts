@@ -3,7 +3,7 @@ import { FmKoreaPopularHotDeal } from '../../types';
 import {
     FMKOREA_BASE_TEST_SUITS,
     FMKOREA_TEST_SUIT_NEVER_BE_CACHE_HIT,
-} from './test-dataset-fmkorea';
+} from './fmkorea/test-dataset-fmkorea';
 
 const baseMockKeyName = 'HGFARM';
 

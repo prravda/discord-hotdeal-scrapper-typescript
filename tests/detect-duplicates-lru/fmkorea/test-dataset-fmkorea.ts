@@ -1,4 +1,4 @@
-import { FmKoreaPopularHotDeal } from '../../types';
+import { FmKoreaPopularHotDeal } from '../../../types';
 
 const maxEntries = 30;
 // decremental-ordered dataset

@@ -1,5 +1,5 @@
-import { FmkoreaHotDealScrapper } from '../../src/scrappers/fmkorea-hot-deal-scrapper';
-import { FmKoreaPopularHotDeal } from '../../types';
+import { FmkoreaHotDealScrapper } from '../../../src/scrappers/fmkorea-hot-deal-scrapper';
+import { FmKoreaPopularHotDeal } from '../../../types';
 import {
     FMKOREA_BASE_TEST_SUITS,
     FMKOREA_TEST_SUIT_NEVER_BE_CACHE_HIT,
