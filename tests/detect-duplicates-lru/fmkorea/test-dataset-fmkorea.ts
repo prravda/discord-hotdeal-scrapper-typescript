@@ -1,6 +1,6 @@
 import { FmKoreaPopularHotDeal } from '../../../types';
 
-const maxEntries = 30;
+const maxEntries = 50;
 // decremental-ordered dataset
 export const FMKOREA_BASE_TEST_SUITS: FmKoreaPopularHotDeal[] = [
     ...Array(maxEntries).keys(),

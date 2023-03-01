@@ -1,6 +1,6 @@
 import { PpomppuHotDeal } from '../../../types';
 
-const maxEntries = 30;
+const maxEntries = 50;
 // decremental-ordered dataset
 export const PPOMPPU_BASE_TEST_SUITS: PpomppuHotDeal[] = [
     ...Array(maxEntries).keys(),
