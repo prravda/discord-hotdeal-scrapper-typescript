@@ -27,7 +27,7 @@ export const ppomppuHotDealPeriodically = async () => {
                     .setDescription(
                         `${new Date().toLocaleTimeString('ko-KR', {
                             timeZone: 'Asia/Seoul',
-                        })} 기준 뽐뿌에서 갱신된 핫 딜 목록입니다.`
+                        })} 기준 뽐뿌에서 갱신된 핫 딜 목록입니다. 갱신은 약 15분에 한 번씩 이뤄집니다.`
                     )
                     .addFields(
                         ...refreshedDealList.map<APIEmbedField>((deal) => {
