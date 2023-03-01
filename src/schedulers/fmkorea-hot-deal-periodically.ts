@@ -50,7 +50,7 @@ export const fmKoreaHotDealPeriodically = async () => {
                             .map<APIEmbedField>((deal) => {
                                 return {
                                     name: `**·[${deal.category}]${deal.title}**`,
-                                    value: `[  └─⛺a: ${deal.seller} / 💵: ${deal.productPrice} / 📦: ${deal.shippingCharge} / 바로가기(클릭)](${deal.link})`,
+                                    value: `[  └─⛺: ${deal.seller} / 💵: ${deal.productPrice} / 📦: ${deal.shippingCharge} / 바로가기(클릭)](${deal.link})`,
                                 };
                             })
                     );
