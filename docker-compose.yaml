@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  hotdeal-scrapper:
+    hostname: hotdeal-scrapper
+    container_name: hotdeal-scrapper
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    env_file:
+      - .env
