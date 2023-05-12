@@ -283,7 +283,7 @@ export class FmkoreaHotDealScrapper {
                         shippingCharge: rawShippingCharge,
                         category: rawCategory?.textContent
                             ?.trim()
-                            .replace('/', '')
+                            .replace(/\//g, '')
                             .trim(),
                     };
                 });
