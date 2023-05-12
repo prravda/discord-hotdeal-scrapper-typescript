@@ -1,5 +1,5 @@
-FROM node:18.14
-FROM mcr.microsoft.com/playwright:v1.30.0-focal
+FROM node:18.16.0-slim
+FROM mcr.microsoft.com/playwright:v1.33.0-jammy
 
 RUN mkdir /app
 WORKDIR /app
