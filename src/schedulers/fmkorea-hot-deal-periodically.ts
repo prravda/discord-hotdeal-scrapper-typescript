@@ -36,7 +36,7 @@ export const fmKoreaHotDealPeriodically = async () => {
                     resultAsEmbed.addFields(
                         ...popular.map<APIEmbedField>((deal) => {
                             return {
-                                name: `**· ${deal.title}**`,
+                                name: `**· 🔥 ${deal.title} 🔥**`,
                                 value: `[└─해당 핫 딜 바로가기(클릭)](${deal.link})`,
                             };
                         })
@@ -49,8 +49,8 @@ export const fmKoreaHotDealPeriodically = async () => {
                             .slice(0, 25 - popular.length)
                             .map<APIEmbedField>((deal) => {
                                 return {
-                                    name: `**· [${deal.category}]${deal.title}**`,
-                                    value: `[└─⛺: ${deal.seller} / 💵: ${deal.productPrice} / 📦: ${deal.shippingCharge} / 바로가기(클릭)](${deal.link})`,
+                                    name: `**· [${deal.category}]${deal.title} / ⛺: ${deal.seller} / 💵: ${deal.productPrice} / 📦: ${deal.shippingCharge}**`,
+                                    value: `[└─해당 핫 딜 바로가기(클릭)](${deal.link})`,
                                 };
                             })
                     );
