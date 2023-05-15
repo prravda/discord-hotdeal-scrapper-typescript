@@ -15,6 +15,9 @@ export class PpomppuHotDealScrapper {
                     this.LRUCacheForPpomppuPopularHotDeal.createHash(
                         `${deal.id}-${deal.title}`
                     );
+                console.log(
+                    `ppomppu-popular: ${deal.id} / ${deal.title} / ${hashKey}`
+                );
                 this.LRUCacheForPpomppuPopularHotDeal.set(hashKey, deal);
             });
 
@@ -33,6 +36,9 @@ export class PpomppuHotDealScrapper {
         result.forEach((deal) => {
             const hashKey = this.LRUCacheForPpomppuPopularHotDeal.createHash(
                 `${deal.id}-${deal.title}`
+            );
+            console.log(
+                `ppomppu-popular: ${deal.id} / ${deal.title} / ${hashKey}`
             );
             this.LRUCacheForPpomppuPopularHotDeal.set(hashKey, deal);
         });

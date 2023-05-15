@@ -38,6 +38,9 @@ export class FmkoreaHotDealScrapper {
                     this.LRUCacheForFmKoreaPopularHotDeal.createHash(
                         `${deal.id}-${deal.title}`
                     );
+                console.log(
+                    `fmkorea-popular: ${deal.id} / ${deal.title} / ${hashKey}`
+                );
                 this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
             });
 
@@ -57,6 +60,9 @@ export class FmkoreaHotDealScrapper {
             const hashKey = this.LRUCacheForFmKoreaPopularHotDeal.createHash(
                 `${deal.id}-${deal.title}`
             );
+            console.log(
+                `fmkorea-popular: ${deal.id} / ${deal.title} / ${hashKey}`
+            );
             this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
         });
 
@@ -72,6 +78,9 @@ export class FmkoreaHotDealScrapper {
                     this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
                         `${deal.id}-${deal.title}`
                     );
+                console.log(
+                    `fmkorea-general: ${deal.id} / ${deal.title} / ${hashKey}`
+                );
                 this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
             });
 
@@ -90,6 +99,9 @@ export class FmkoreaHotDealScrapper {
         result.forEach((deal) => {
             const hashKey = this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
                 `${deal.id}-${deal.title}`
+            );
+            console.log(
+                `fmkorea-general: ${deal.id} / ${deal.title} / ${hashKey}`
             );
             this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
         });
