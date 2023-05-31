@@ -39,6 +39,8 @@
     "joi": "^17.7.1",
     "jsdom": "^21.1.0",
     "node-fetch": "^2.6.9",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "winston": "^3.9.0",
+    "winston-loki": "^6.0.6"
   }
 }
