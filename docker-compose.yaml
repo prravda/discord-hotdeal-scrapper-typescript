@@ -39,7 +39,8 @@ services:
     container_name: "loki"
     ports:
       - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./grafana/loki-local-config.yaml:/etc/loki/local-config.yaml
     networks:
       - bot
 

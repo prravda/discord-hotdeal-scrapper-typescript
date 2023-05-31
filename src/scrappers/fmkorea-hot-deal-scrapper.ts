@@ -7,6 +7,7 @@ import {
     FmKoreaTotalHotDeal,
 } from '../../types';
 import { LRUCache } from '../../infra/lru-cache';
+import { LokiLogger } from '../../infra/logger/loki-logger';
 
 export class FmkoreaHotDealScrapper {
     private LRUCacheForFmKoreaPopularHotDeal =
@@ -38,9 +39,14 @@ export class FmkoreaHotDealScrapper {
                     this.LRUCacheForFmKoreaPopularHotDeal.createHash(
                         `${deal.id}-${deal.title}`
                     );
-                console.log(
-                    `fmkorea-popular: ${deal.id} / ${deal.title} / ${hashKey}`
-                );
+                LokiLogger.getLogger().info({
+                    labels: {
+                        origin: 'fmkorea',
+                        target: 'hotdeal',
+                        dealType: 'popular',
+                    },
+                    message: `${deal.id}/${deal.title}/${hashKey}`,
+                });
                 this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
             });
 
@@ -60,9 +66,14 @@ export class FmkoreaHotDealScrapper {
             const hashKey = this.LRUCacheForFmKoreaPopularHotDeal.createHash(
                 `${deal.id}-${deal.title}`
             );
-            console.log(
-                `fmkorea-popular: ${deal.id} / ${deal.title} / ${hashKey}`
-            );
+            LokiLogger.getLogger().info({
+                labels: {
+                    origin: 'fmkorea',
+                    target: 'hotdeal',
+                    dealType: 'popular',
+                },
+                message: `${deal.id}/${deal.title}/${hashKey}`,
+            });
             this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
         });
 
@@ -78,9 +89,14 @@ export class FmkoreaHotDealScrapper {
                     this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
                         `${deal.id}-${deal.title}`
                     );
-                console.log(
-                    `fmkorea-general: ${deal.id} / ${deal.title} / ${hashKey}`
-                );
+                LokiLogger.getLogger().info({
+                    labels: {
+                        origin: 'fmkorea',
+                        target: 'hotdeal',
+                        dealType: 'general',
+                    },
+                    message: `${deal.id}/${deal.title}/${hashKey}`,
+                });
                 this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
             });
 
@@ -100,9 +116,14 @@ export class FmkoreaHotDealScrapper {
             const hashKey = this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
                 `${deal.id}-${deal.title}`
             );
-            console.log(
-                `fmkorea-general: ${deal.id} / ${deal.title} / ${hashKey}`
-            );
+            LokiLogger.getLogger().info({
+                labels: {
+                    origin: 'fmkorea',
+                    target: 'hotdeal',
+                    dealType: 'general',
+                },
+                message: `${deal.id}/${deal.title}/${hashKey}`,
+            });
             this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
         });
 
@@ -342,13 +363,16 @@ export class FmkoreaHotDealScrapper {
             page.on('request', async (req) => {
                 const header = await req.allHeaders();
                 if (header['cookie'] && header['cookie'].includes('idntm5')) {
-                    console.log(
-                        `[fmkorea][credential] idntm5 value: ${
+                    LokiLogger.getLogger().info({
+                        labels: { origin: 'fmkorea', target: 'credential' },
+                        idtm5: header['cookie']
+                            .split('idntm5=')[1]
+                            .split(';')[0],
+                        userAgent: header['user-agent'],
+                        message: `idtm5: ${
                             header['cookie'].split('idntm5=')[1].split(';')[0]
-                        } / timestamp: ${new Date()} / user-agent: ${
-                            header['user-agent']
-                        }`
-                    );
+                        }/userAgent: ${header['user-agent']}`,
+                    });
                 }
             });
 
@@ -373,13 +397,18 @@ export class FmkoreaHotDealScrapper {
                 throw new Error('An error is occurred');
             }
 
-            console.log(`transaction result: success`);
-
             return {
                 popular: popularHotDealList,
                 general: generalHotDealList,
             };
         } catch (e) {
+            const errorAsErrorObject = e as Error;
+            LokiLogger.getLogger().error({
+                label: {
+                    origin: 'fmkorea',
+                },
+                message: `error=${errorAsErrorObject.stack}`,
+            });
             throw e;
         } finally {
             await browser.close();

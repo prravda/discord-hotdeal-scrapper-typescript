@@ -1,5 +1,5 @@
 FROM node:18.16.0-slim
-FROM mcr.microsoft.com/playwright:v1.33.0-jammy
+FROM mcr.microsoft.com/playwright:v1.34.3-jammy
 
 RUN mkdir /app
 WORKDIR /app
