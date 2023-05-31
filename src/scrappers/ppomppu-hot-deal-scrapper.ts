@@ -4,6 +4,7 @@ import { JSDOM } from 'jsdom';
 import { decode } from 'iconv-lite';
 import { PpomppuHotDeal } from '../../types';
 import { LRUCache } from '../../infra/lru-cache';
+import { LokiLogger } from '../../infra/logger/loki-logger';
 
 export class PpomppuHotDealScrapper {
     private LRUCacheForPpomppuPopularHotDeal = new LRUCache<PpomppuHotDeal>();
@@ -15,9 +16,14 @@ export class PpomppuHotDealScrapper {
                     this.LRUCacheForPpomppuPopularHotDeal.createHash(
                         `${deal.id}-${deal.title}`
                     );
-                console.log(
-                    `ppomppu-popular: ${deal.id} / ${deal.title} / ${hashKey}`
-                );
+                LokiLogger.getLogger().info({
+                    labels: {
+                        origin: 'ppomppu',
+                        target: 'hotdeal',
+                        dealType: 'general',
+                    },
+                    message: `${deal.id}/${deal.title}/${hashKey}`,
+                });
                 this.LRUCacheForPpomppuPopularHotDeal.set(hashKey, deal);
             });
 
@@ -37,9 +43,14 @@ export class PpomppuHotDealScrapper {
             const hashKey = this.LRUCacheForPpomppuPopularHotDeal.createHash(
                 `${deal.id}-${deal.title}`
             );
-            console.log(
-                `ppomppu-popular: ${deal.id} / ${deal.title} / ${hashKey}`
-            );
+            LokiLogger.getLogger().info({
+                labels: {
+                    origin: 'ppomppu',
+                    target: 'hotdeal',
+                    dealType: 'general',
+                },
+                message: `${deal.id}/${deal.title}/${hashKey}`,
+            });
             this.LRUCacheForPpomppuPopularHotDeal.set(hashKey, deal);
         });
 
@@ -91,14 +102,20 @@ export class PpomppuHotDealScrapper {
 
                 dealList.push({
                     id: dealLink ? Number(dealLink.split('&no=')[1]) : 0,
-                    title: title ? title : '링크 접속 후 확인해주세요!',
+                    title: title ? title.trim() : '링크 접속 후 확인해주세요!',
                     link: `${baseUrl}${dealLink}`,
                 });
             });
 
             return dealList;
-        } catch (e) {
-            console.error(e);
+        } catch (e: unknown) {
+            const errorAsErrorObject = e as Error;
+            LokiLogger.getLogger().error({
+                label: {
+                    origin: 'ppomppu',
+                },
+                message: `error=${errorAsErrorObject.stack}`,
+            });
             throw e;
         }
     }
