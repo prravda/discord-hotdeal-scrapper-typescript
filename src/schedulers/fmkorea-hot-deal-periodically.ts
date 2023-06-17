@@ -1,11 +1,7 @@
-import { ClientInstance } from '../../infra/discord/client-instance';
-import { APIEmbedField, EmbedBuilder } from 'discord.js';
 import { FmkoreaHotDealScrapper } from '../scrappers/fmkorea-hot-deal-scrapper';
-import { envList } from '../../infra/env-config';
 
 export const fmKoreaHotDealPeriodically = async () => {
     try {
-        const client = ClientInstance.getClient();
         const fmKoreaScrapper = new FmkoreaHotDealScrapper();
 
         const job = async () => {
