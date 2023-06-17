@@ -102,16 +102,16 @@ export const envList = {
 - 이런 식으로 type-safe 하게 environment variable validation 을 진행합니다.
 
 ```shell
-/Users/pravda/development/personal/discord-bot-typescript/infra/env-config.ts:30
+/Users/pravda/development/personal/discord-hotdeal-scrapper-typescript/infra/env-config.ts:30
         throw new Error(`Validation error: ${error.message}`);
               ^
 Error: Validation error: "DISCORD_API_VERSION" is required
-    at validateEnvList (/Users/pravda/development/personal/discord-bot-typescript/infra/env-config.ts:30:15)
-    at Object.<anonymous> (/Users/pravda/development/personal/discord-bot-typescript/infra/env-config.ts:36:23)
+    at validateEnvList (/Users/pravda/development/personal/discord-hotdeal-scrapper-typescript/infra/env-config.ts:30:15)
+    at Object.<anonymous> (/Users/pravda/development/personal/discord-hotdeal-scrapper-typescript/infra/env-config.ts:36:23)
     at Module._compile (node:internal/modules/cjs/loader:1226:14)
-    at Module.m._compile (/Users/pravda/development/personal/discord-bot-typescript/node_modules/ts-node/src/index.ts:1618:23)
+    at Module.m._compile (/Users/pravda/development/personal/discord-hotdeal-scrapper-typescript/node_modules/ts-node/src/index.ts:1618:23)
     at Module._extensions..js (node:internal/modules/cjs/loader:1280:10)
-    at Object.require.extensions.<computed> [as .ts] (/Users/pravda/development/personal/discord-bot-typescript/node_modules/ts-node/src/index.ts:1621:12)
+    at Object.require.extensions.<computed> [as .ts] (/Users/pravda/development/personal/discord-hotdeal-scrapper-typescript/node_modules/ts-node/src/index.ts:1621:12)
     at Module.load (node:internal/modules/cjs/loader:1089:32)
     at Function.Module._load (node:internal/modules/cjs/loader:930:12)
     at Module.require (node:internal/modules/cjs/loader:1113:19)

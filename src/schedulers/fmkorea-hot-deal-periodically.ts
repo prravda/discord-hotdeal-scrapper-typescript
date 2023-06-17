@@ -12,56 +12,7 @@ export const fmKoreaHotDealPeriodically = async () => {
             const { popular, general } =
                 await fmKoreaScrapper.getRefreshedHotDealList();
 
-            const hotDealBroadcastChannel = await client.channels.fetch(
-                envList.HOT_DEAL_CHANNEL_ID
-            );
-
-            if (
-                hotDealBroadcastChannel &&
-                hotDealBroadcastChannel.isTextBased()
-            ) {
-                const resultAsEmbed = new EmbedBuilder()
-                    .setColor(0xefff00)
-                    .setTitle('펨코 핫 딜 목록!')
-                    .setDescription(
-                        `${new Date().toLocaleTimeString('ko-KR', {
-                            timeZone: 'Asia/Seoul',
-                        })} 기준 펨코에서 갱신된 핫 딜 목록입니다.`
-                    )
-                    .setFooter({
-                        text: '오류제보 및 기능개선은 #봇_기능_건의 혹은 prravda#8996 로',
-                    });
-
-                if (popular.length > 0) {
-                    resultAsEmbed.addFields(
-                        ...popular.map<APIEmbedField>((deal) => {
-                            return {
-                                name: `**· 🔥 ${deal.title} 🔥**`,
-                                value: `[└─해당 핫 딜 바로가기(클릭)](${deal.link})`,
-                            };
-                        })
-                    );
-                }
-
-                if (general.length > 0) {
-                    resultAsEmbed.addFields(
-                        ...general
-                            .slice(0, 25 - popular.length)
-                            .map<APIEmbedField>((deal) => {
-                                return {
-                                    name: `**· [${deal.category}]${deal.title} / ⛺: ${deal.seller} / 💵: ${deal.productPrice} / 📦: ${deal.shippingCharge}**`,
-                                    value: `[└─해당 핫 딜 바로가기(클릭)](${deal.link})`,
-                                };
-                            })
-                    );
-                }
-
-                if (general.length > 0 || popular.length > 0) {
-                    await hotDealBroadcastChannel.send({
-                        embeds: [resultAsEmbed],
-                    });
-                }
-            }
+            // TODO: send this hot deal into broker's producer
 
             setTimeout(
                 job,
