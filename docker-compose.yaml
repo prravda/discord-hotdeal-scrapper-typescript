@@ -18,7 +18,7 @@ services:
       logging: "promtail"
       logging_jobname: "containerlogs"
     networks:
-      - bot
+      - hotdeal-service
 
   grafana:
     image: grafana/grafana:latest
@@ -32,7 +32,7 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
     networks:
-      - bot
+      - hotdeal-service
 
   loki:
     image: grafana/loki:latest
@@ -42,7 +42,7 @@ services:
     volumes:
       - ./grafana/loki-local-config.yaml:/etc/loki/local-config.yaml
     networks:
-      - bot
+      - hotdeal-service
 
   promtail:
     image: grafana/promtail:latest
@@ -55,7 +55,9 @@ services:
     depends_on:
       - loki
     networks:
-      - bot
+      - hotdeal-service
 
 networks:
-  bot:
+  hotdeal-service:
+    name: hotdeal-service
+    external: true
