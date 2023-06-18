@@ -4,6 +4,7 @@ services:
   hotdeal-scrapper:
     hostname: hotdeal-scrapper
     container_name: hotdeal-scrapper
+    image: hotdeal-scrapper:1.0.0
     build:
       context: .
       dockerfile: Dockerfile
