@@ -13,27 +13,31 @@ export const fmKoreaHotDealPeriodically = async () => {
             const { popular, general } =
                 await fmKoreaScrapper.getRefreshedHotDealList();
 
-            const eventForPopular: HotDealUpdated = {
-                version: ENV_LIST.HOT_DEAL_UPDATED_EVENT_VERSION,
-                hotDealSource: HOT_DEAL_SOURCE.FMKOREA_POPULAR,
-                timestamp: new Date(),
-                listOfHotDeal: popular,
-            };
+            if (popular.length > 0) {
+                const eventForPopular: HotDealUpdated = {
+                    version: ENV_LIST.HOT_DEAL_UPDATED_EVENT_VERSION,
+                    hotDealSource: HOT_DEAL_SOURCE.FMKOREA_POPULAR,
+                    timestamp: new Date(),
+                    listOfHotDeal: popular,
+                };
 
-            const eventForGeneral: HotDealUpdated = {
-                version: ENV_LIST.HOT_DEAL_UPDATED_EVENT_VERSION,
-                hotDealSource: HOT_DEAL_SOURCE.FMKOREA_GENERAL,
-                timestamp: new Date(),
-                listOfHotDeal: general,
-            };
+                await publisher.produce({
+                    message: eventForPopular,
+                });
+            }
 
-            await publisher.produce({
-                message: eventForPopular,
-            });
+            if (general.length > 0) {
+                const eventForGeneral: HotDealUpdated = {
+                    version: ENV_LIST.HOT_DEAL_UPDATED_EVENT_VERSION,
+                    hotDealSource: HOT_DEAL_SOURCE.FMKOREA_GENERAL,
+                    timestamp: new Date(),
+                    listOfHotDeal: general,
+                };
 
-            await publisher.produce({
-                message: eventForGeneral,
-            });
+                await publisher.produce({
+                    message: eventForGeneral,
+                });
+            }
 
             setTimeout(
                 job,

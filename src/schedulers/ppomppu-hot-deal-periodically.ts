@@ -13,16 +13,18 @@ export const ppomppuHotDealPeriodically = async () => {
             const refreshedDealList =
                 await ppomppuScrapper.getRefreshedHotDealList();
 
-            const eventForGeneral: HotDealUpdated = {
-                version: ENV_LIST.HOT_DEAL_UPDATED_EVENT_VERSION,
-                hotDealSource: HOT_DEAL_SOURCE.PPOMPPU_GENERAL,
-                timestamp: new Date(),
-                listOfHotDeal: refreshedDealList,
-            };
+            if (refreshedDealList.length > 0) {
+                const eventForGeneral: HotDealUpdated = {
+                    version: ENV_LIST.HOT_DEAL_UPDATED_EVENT_VERSION,
+                    hotDealSource: HOT_DEAL_SOURCE.PPOMPPU_GENERAL,
+                    timestamp: new Date(),
+                    listOfHotDeal: refreshedDealList,
+                };
 
-            await publisher.produce({
-                message: eventForGeneral,
-            });
+                await publisher.produce({
+                    message: eventForGeneral,
+                });
+            }
 
             setTimeout(
                 job,
