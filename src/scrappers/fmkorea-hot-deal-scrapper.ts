@@ -1,6 +1,6 @@
 import { chromium, devices } from 'playwright-core';
 import { RuntimeConfig } from '../../infra/runtime-config';
-import { Page } from '@playwright/test';
+import { Page } from 'playwright';
 import {
     FmKoreaGeneralHotDeal,
     FmKoreaPopularHotDeal,
