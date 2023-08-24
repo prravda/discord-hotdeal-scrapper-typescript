@@ -378,7 +378,15 @@ export class FmkoreaHotDealScrapper {
 
             page.on('request', async (req) => {
                 const header = await req.allHeaders();
-                if (header['cookie'] && header['cookie'].includes('idntm5')) {
+                const cookie = header['cookie'] || '';
+
+                const matcherForFingerPrint = /idntm5=(.*?);/;
+                const fingerPrintMatch = cookie.match(matcherForFingerPrint);
+
+                if (fingerPrintMatch) {
+                    const [, fingerPrint] = fingerPrintMatch;
+                    const { 'user-agent': userAgent } = header;
+
                     LokiLogger.getLogger().info({
                         labels: { origin: 'fmkorea', target: 'credential' },
                         message: { fingerPrint, userAgent },
