@@ -365,13 +365,7 @@ export class FmkoreaHotDealScrapper {
                 if (header['cookie'] && header['cookie'].includes('idntm5')) {
                     LokiLogger.getLogger().info({
                         labels: { origin: 'fmkorea', target: 'credential' },
-                        idtm5: header['cookie']
-                            .split('idntm5=')[1]
-                            .split(';')[0],
-                        userAgent: header['user-agent'],
-                        message: `idtm5: ${
-                            header['cookie'].split('idntm5=')[1].split(';')[0]
-                        }/userAgent: ${header['user-agent']}`,
+                        message: { fingerPrint, userAgent },
                     });
                 }
             });
