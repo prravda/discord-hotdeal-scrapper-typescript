@@ -22,7 +22,11 @@ export class PpomppuHotDealScrapper {
                         target: 'hotdeal',
                         dealType: 'general',
                     },
-                    message: `${deal.id}/${deal.title}/${hashKey}`,
+                    message: {
+                        id: deal.id,
+                        title: deal.title,
+                        hash: hashKey,
+                    },
                 });
                 this.LRUCacheForPpomppuPopularHotDeal.set(hashKey, deal);
             });
@@ -49,7 +53,11 @@ export class PpomppuHotDealScrapper {
                     target: 'hotdeal',
                     dealType: 'general',
                 },
-                message: `${deal.id}/${deal.title}/${hashKey}`,
+                message: {
+                    id: deal.id,
+                    title: deal.title,
+                    hash: hashKey,
+                },
             });
             this.LRUCacheForPpomppuPopularHotDeal.set(hashKey, deal);
         });

@@ -8,3 +8,10 @@ datasources:
     version: 1
     editable: false
     isDefault: true
+
+  - name: Pyroscope
+    type: phlare
+    url: http://pyroscope:4040
+    jsonData:
+        minStep: '15s'
+        backendType: 'pyroscope'

@@ -45,7 +45,11 @@ export class FmkoreaHotDealScrapper {
                         target: 'hotdeal',
                         dealType: 'popular',
                     },
-                    message: `${deal.id}/${deal.title}/${hashKey}`,
+                    message: {
+                        id: deal.id,
+                        title: deal.title,
+                        hash: hashKey,
+                    },
                 });
                 this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
             });
@@ -72,7 +76,11 @@ export class FmkoreaHotDealScrapper {
                     target: 'hotdeal',
                     dealType: 'popular',
                 },
-                message: `${deal.id}/${deal.title}/${hashKey}`,
+                message: {
+                    id: deal.id,
+                    title: deal.title,
+                    hash: hashKey,
+                },
             });
             this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
         });
@@ -95,7 +103,11 @@ export class FmkoreaHotDealScrapper {
                         target: 'hotdeal',
                         dealType: 'general',
                     },
-                    message: `${deal.id}/${deal.title}/${hashKey}`,
+                    message: {
+                        id: deal.id,
+                        title: deal.title,
+                        hash: hashKey,
+                    },
                 });
                 this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
             });
@@ -122,7 +134,11 @@ export class FmkoreaHotDealScrapper {
                     target: 'hotdeal',
                     dealType: 'general',
                 },
-                message: `${deal.id}/${deal.title}/${hashKey}`,
+                message: {
+                    id: deal.id,
+                    title: deal.title,
+                    hash: hashKey,
+                },
             });
             this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
         });
@@ -362,16 +378,18 @@ export class FmkoreaHotDealScrapper {
 
             page.on('request', async (req) => {
                 const header = await req.allHeaders();
-                if (header['cookie'] && header['cookie'].includes('idntm5')) {
+                const cookie = header['cookie'] || '';
+
+                const matcherForFingerPrint = /idntm5=(.*?);/;
+                const fingerPrintMatch = cookie.match(matcherForFingerPrint);
+
+                if (fingerPrintMatch) {
+                    const [, fingerPrint] = fingerPrintMatch;
+                    const { 'user-agent': userAgent } = header;
+
                     LokiLogger.getLogger().info({
                         labels: { origin: 'fmkorea', target: 'credential' },
-                        idtm5: header['cookie']
-                            .split('idntm5=')[1]
-                            .split(';')[0],
-                        userAgent: header['user-agent'],
-                        message: `idtm5: ${
-                            header['cookie'].split('idntm5=')[1].split(';')[0]
-                        }/userAgent: ${header['user-agent']}`,
+                        message: { fingerPrint, userAgent },
                     });
                 }
             });
