@@ -11,8 +11,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 5s
-        max_attempts: 3
     env_file:
       - .env
     labels:
@@ -23,6 +21,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
+    hostname: "grafana"
     container_name: "grafana"
     ports:
       - "3000:3000"
@@ -32,6 +31,22 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+    networks:
+      - hotdeal-service
+
+  pyroscope:
+    hostname: pyroscope
+    container_name: pyroscope
+    image: "pyroscope/pyroscope:latest"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "4040:4040"
+    command:
+      - "server"
+    volumes:
+      - ./grafana/pyroscope-local-config.yaml:/etc/pyroscope/server.yaml
     networks:
       - hotdeal-service
 
