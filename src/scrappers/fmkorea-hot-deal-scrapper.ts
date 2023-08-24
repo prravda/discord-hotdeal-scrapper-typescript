@@ -45,7 +45,11 @@ export class FmkoreaHotDealScrapper {
                         target: 'hotdeal',
                         dealType: 'popular',
                     },
-                    message: `${deal.id}/${deal.title}/${hashKey}`,
+                    message: {
+                        id: deal.id,
+                        title: deal.title,
+                        hash: hashKey,
+                    },
                 });
                 this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
             });
@@ -72,7 +76,11 @@ export class FmkoreaHotDealScrapper {
                     target: 'hotdeal',
                     dealType: 'popular',
                 },
-                message: `${deal.id}/${deal.title}/${hashKey}`,
+                message: {
+                    id: deal.id,
+                    title: deal.title,
+                    hash: hashKey,
+                },
             });
             this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
         });
@@ -95,7 +103,11 @@ export class FmkoreaHotDealScrapper {
                         target: 'hotdeal',
                         dealType: 'general',
                     },
-                    message: `${deal.id}/${deal.title}/${hashKey}`,
+                    message: {
+                        id: deal.id,
+                        title: deal.title,
+                        hash: hashKey,
+                    },
                 });
                 this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
             });
@@ -122,7 +134,11 @@ export class FmkoreaHotDealScrapper {
                     target: 'hotdeal',
                     dealType: 'general',
                 },
-                message: `${deal.id}/${deal.title}/${hashKey}`,
+                message: {
+                    id: deal.id,
+                    title: deal.title,
+                    hash: hashKey,
+                },
             });
             this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
         });
