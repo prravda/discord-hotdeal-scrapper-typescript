@@ -47,6 +47,7 @@ services:
       - "server"
     volumes:
       - ./grafana/pyroscope-local-config.yaml:/etc/pyroscope/server.yaml
+      - pyroscope:/var/lib/pyroscope
     networks:
       - hotdeal-service
 
@@ -57,6 +58,7 @@ services:
       - "3100:3100"
     volumes:
       - ./grafana/loki-local-config.yaml:/etc/loki/local-config.yaml
+      - loki:/loki
     networks:
       - hotdeal-service
 
@@ -77,3 +79,7 @@ networks:
   hotdeal-service:
     name: hotdeal-service
     external: true
+
+volumes:
+  pyroscope:
+  loki:

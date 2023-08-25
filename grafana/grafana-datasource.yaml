@@ -11,7 +11,10 @@ datasources:
 
   - name: Pyroscope
     type: phlare
+    access: proxy
     url: http://pyroscope:4040
+    version: 1
+    editable: false
     jsonData:
         minStep: '15s'
         backendType: 'pyroscope'
