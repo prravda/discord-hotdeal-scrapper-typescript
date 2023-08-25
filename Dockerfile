@@ -12,4 +12,8 @@ FROM mcr.microsoft.com/playwright:v1.37.0-jammy as execution
 WORKDIR /app
 COPY --from=build /app /app
 
+RUN apt-get update && apt-get install dumb-init
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
 CMD ["npx", "ts-node", "app.ts"]
