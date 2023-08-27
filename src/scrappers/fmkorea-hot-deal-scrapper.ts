@@ -429,6 +429,7 @@ export class FmkoreaHotDealScrapper {
             });
             throw e;
         } finally {
+            await context.close();
             await browser.close();
         }
     }
