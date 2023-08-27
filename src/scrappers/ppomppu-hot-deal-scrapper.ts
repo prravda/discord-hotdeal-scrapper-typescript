@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { RuntimeConfig } from '../../infra/runtime-config';
-import { JSDOM } from 'jsdom';
+import { parseHTML } from 'linkedom';
 import { decode } from 'iconv-lite';
 import { PpomppuHotDeal } from '../../types';
 import { LRUCache } from '../../infra/lru-cache';
@@ -73,7 +73,7 @@ export class PpomppuHotDealScrapper {
             throw e;
         }
     }
-    private async parseHotDeal() {
+    public async parseHotDeal() {
         try {
             const result = await axios.request({
                 url: RuntimeConfig.PPOMPPU_HOT_DEAL_URL,
@@ -88,11 +88,10 @@ export class PpomppuHotDealScrapper {
                 responseType: 'arraybuffer',
                 responseEncoding: 'binary',
             });
-            const { document } = new JSDOM(decode(result.data, 'EUC-KR'))
-                .window;
+            const { document } = parseHTML(decode(result.data, 'EUC-KR'));
 
             const hotDealTableLinks = document.body
-                ?.querySelector<HTMLTableElement>('.board_table')
+                .querySelector<HTMLTableElement>('.board_table')
                 ?.querySelectorAll<HTMLAnchorElement>('a.title:not([style])');
 
             const dealList: PpomppuHotDeal[] = [];
