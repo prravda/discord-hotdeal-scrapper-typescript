@@ -17,6 +17,7 @@ const envListSchema = Joi.object({
     HOT_DEAL_UPDATED_EVENT_VERSION: Joi.number()
         .required()
         .description('version of hot deal updated event'),
+    REDIS_PASSWORD: Joi.string().required().description('redis password'),
 }).unknown();
 
 const validateEnvList = () => {
@@ -40,4 +41,5 @@ export const ENV_LIST = {
     MEMPHIS_PRODUCER_NAME: afterValidate.MEMPHIS_PRODUCER_NAME as string,
     HOT_DEAL_UPDATED_EVENT_VERSION:
         afterValidate.HOT_DEAL_UPDATED_EVENT_VERSION as number,
+    REDIS_PASSWORD: afterValidate.REDIS_PASSWORD as string,
 };
