@@ -151,8 +151,7 @@ export class FmKoreaHotDealScrapper {
         const userAgent = this.getRandomUserAgent();
 
         return {
-            browserToUse:
-                userAgent.defaultBrowserType === 'webkit' ? webkit : chromium,
+            browserToUse: chromium,
             browserContextOptions: {
                 ...userAgent,
                 extraHTTPHeaders: FMKOREA_AUXILIARY.BASIC_HEADERS,
