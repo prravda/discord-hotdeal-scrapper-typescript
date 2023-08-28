@@ -1,164 +1,105 @@
 import { chromium, devices } from 'playwright-core';
-import { RuntimeConfig } from '../../infra/runtime-config';
-import { Page } from 'playwright';
+import { RUNTIME_CONFIG } from '../../infra/runtime-config';
+import { Page, webkit } from 'playwright';
 import {
+    BasicHotDeal,
     FmKoreaGeneralHotDeal,
     FmKoreaPopularHotDeal,
     FmKoreaTotalHotDeal,
 } from '../../types';
-import { LRUCache } from '../../infra/lru-cache';
 import { LokiLogger } from '../../infra/logger/loki-logger';
+import { FMKOREA_AUXILIARY } from '../common/SCRAPPER_AUXIILARIES';
+import { DuplicateTableRepositoryInterface } from '../repositories/duplicate-table-repository.interface';
+import { generateHash } from '../helpers/generate-hash';
 
-export class FmkoreaHotDealScrapper {
-    private LRUCacheForFmKoreaPopularHotDeal =
-        new LRUCache<FmKoreaPopularHotDeal>();
-    private LRUCacheForFmKoreaGeneralHotDeal =
-        new LRUCache<FmKoreaGeneralHotDeal>();
-    private readonly srlOnError = 99999;
+export class FmKoreaHotDealScrapper {
+    private readonly srlOnError: number = 999_999_999;
     private readonly textPlaceHolderOnError = '접속 후 확인해 주세요';
+
+    constructor(
+        private readonly duplicateTableRepository: DuplicateTableRepositoryInterface
+    ) {}
 
     public async getRefreshedHotDealList(): Promise<FmKoreaTotalHotDeal> {
         try {
             const { popular, general } = await this.parseHotDeal();
 
+            const filteredPopularHotDealList =
+                await this.extractNewHotDeal<FmKoreaPopularHotDeal>(popular);
+            const filteredGeneralHotDealList =
+                await this.extractNewHotDeal<FmKoreaGeneralHotDeal>(general);
+
+            // logging
+            filteredPopularHotDealList.forEach(
+                (eachRefreshedPopularHotDeal) => {
+                    const { id, title } = eachRefreshedPopularHotDeal;
+                    const hash = generateHash(id, title, 'popular');
+
+                    LokiLogger.getLogger().info({
+                        labels: {
+                            origin: 'fmkorea',
+                            target: 'hotdeal',
+                            dealType: 'popular',
+                        },
+                        message: {
+                            id,
+                            title,
+                            hash,
+                        },
+                    });
+                }
+            );
+
+            filteredGeneralHotDealList.forEach(
+                (eachRefreshedGeneralHotDeal) => {
+                    const { id, title } = eachRefreshedGeneralHotDeal;
+                    const hash = generateHash(id, title);
+
+                    LokiLogger.getLogger().info({
+                        labels: {
+                            origin: 'fmkorea',
+                            target: 'hotdeal',
+                            dealType: 'general',
+                        },
+                        message: {
+                            id,
+                            title,
+                            hash,
+                        },
+                    });
+                }
+            );
+
             return {
-                general: this.refreshGeneralHotDeal(general),
-                popular: this.refreshPopularHotDeal(popular),
+                popular: filteredPopularHotDealList,
+                general: filteredGeneralHotDealList,
             };
         } catch (e) {
             throw e;
         }
     }
 
-    protected refreshPopularHotDeal(
-        popularHotDealList: FmKoreaPopularHotDeal[]
-    ) {
-        if (this.LRUCacheForFmKoreaPopularHotDeal.size() === 0) {
-            popularHotDealList.forEach((deal) => {
-                const hashKey =
-                    this.LRUCacheForFmKoreaPopularHotDeal.createHash(
-                        `${deal.id}-${deal.title}`
-                    );
-                LokiLogger.getLogger().info({
-                    labels: {
-                        origin: 'fmkorea',
-                        target: 'hotdeal',
-                        dealType: 'popular',
-                    },
-                    message: {
-                        id: deal.id,
-                        title: deal.title,
-                        hash: hashKey,
-                    },
-                });
-                this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
-            });
-
-            return popularHotDealList;
-        }
-
-        const result = popularHotDealList.filter(
-            (deal) =>
-                this.LRUCacheForFmKoreaPopularHotDeal.get(
-                    this.LRUCacheForFmKoreaPopularHotDeal.createHash(
-                        `${deal.id}-${deal.title}`
-                    )
-                ) === null
+    private async extractNewHotDeal<T extends BasicHotDeal>(hotDealList: T[]) {
+        const validateResult = await Promise.all(
+            hotDealList.map(
+                async (hotDeal) => await this.checkNewHotDeal<T>(hotDeal)
+            )
         );
 
-        result.forEach((deal) => {
-            const hashKey = this.LRUCacheForFmKoreaPopularHotDeal.createHash(
-                `${deal.id}-${deal.title}`
-            );
-            LokiLogger.getLogger().info({
-                labels: {
-                    origin: 'fmkorea',
-                    target: 'hotdeal',
-                    dealType: 'popular',
-                },
-                message: {
-                    id: deal.id,
-                    title: deal.title,
-                    hash: hashKey,
-                },
-            });
-            this.LRUCacheForFmKoreaPopularHotDeal.set(hashKey, deal);
-        });
-
-        return result;
+        return hotDealList.filter((_, idx) => validateResult[idx]);
     }
 
-    protected refreshGeneralHotDeal(
-        generalHotDealList: FmKoreaGeneralHotDeal[]
-    ) {
-        if (this.LRUCacheForFmKoreaGeneralHotDeal.size() === 0) {
-            generalHotDealList.forEach((deal) => {
-                const hashKey =
-                    this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
-                        `${deal.id}-${deal.title}`
-                    );
-                LokiLogger.getLogger().info({
-                    labels: {
-                        origin: 'fmkorea',
-                        target: 'hotdeal',
-                        dealType: 'general',
-                    },
-                    message: {
-                        id: deal.id,
-                        title: deal.title,
-                        hash: hashKey,
-                    },
-                });
-                this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
-            });
-
-            return generalHotDealList;
+    private async checkNewHotDeal<T extends BasicHotDeal>(hotDeal: T) {
+        // case of general hot deal
+        if ('category' in hotDeal) {
+            const hashKey = generateHash(hotDeal.id, hotDeal.title);
+            return this.duplicateTableRepository.isNewHotDeal(hashKey);
         }
-
-        const result = generalHotDealList.filter(
-            (deal) =>
-                this.LRUCacheForFmKoreaGeneralHotDeal.get(
-                    this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
-                        `${deal.id}-${deal.title}`
-                    )
-                ) === null
-        );
-
-        result.forEach((deal) => {
-            const hashKey = this.LRUCacheForFmKoreaGeneralHotDeal.createHash(
-                `${deal.id}-${deal.title}`
-            );
-            LokiLogger.getLogger().info({
-                labels: {
-                    origin: 'fmkorea',
-                    target: 'hotdeal',
-                    dealType: 'general',
-                },
-                message: {
-                    id: deal.id,
-                    title: deal.title,
-                    hash: hashKey,
-                },
-            });
-            this.LRUCacheForFmKoreaGeneralHotDeal.set(hashKey, deal);
-        });
-
-        return result;
+        // case of popular hot deal
+        const hashKey = generateHash(hotDeal.id, hotDeal.title, 'popular');
+        return this.duplicateTableRepository.isNewHotDeal(hashKey);
     }
 
-    private getFmKoreaBasicHeader() {
-        return {
-            method: 'GET',
-            accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'accept-encoding': 'gzip, deflate, br',
-            'accept-language': 'en-US,en;q=0.9',
-            'sec-fetch-dest': 'document',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-site': 'same-origin',
-            'sec-fetch-user': '?1',
-            referer: 'https://www.fmkorea.com/',
-        };
-    }
     private getRandomUserAgent() {
         const deviceDescriptors = [
             devices['Desktop Chrome'],
@@ -208,13 +149,13 @@ export class FmkoreaHotDealScrapper {
 
     private getBrowserAndContextBasedOnUserAgent() {
         const userAgent = this.getRandomUserAgent();
+
         return {
-            browserToUse: chromium,
+            browserToUse:
+                userAgent.defaultBrowserType === 'webkit' ? webkit : chromium,
             browserContextOptions: {
                 ...userAgent,
-                extraHTTPHeaders: {
-                    ...this.getFmKoreaBasicHeader(),
-                },
+                extraHTTPHeaders: FMKOREA_AUXILIARY.BASIC_HEADERS,
                 rawUserAgent: this.getRandomUserAgent(),
             },
         };
@@ -242,16 +183,13 @@ export class FmkoreaHotDealScrapper {
     }
 
     private async parsePopularItem(hotDealPage: Page, isMobile: boolean) {
-        const selectorForDesktop = 'tr.notice_pop1 > td.title > a:not([title])';
-        const selectorForMobile = 'li.pop1 > a[href]';
-
         const popularItemListSelector = isMobile
-            ? selectorForMobile
-            : selectorForDesktop;
+            ? FMKOREA_AUXILIARY.SELECTOR.POPULAR_HOT_DEAL.ITEM_LIST.FOR_MOBILE
+            : FMKOREA_AUXILIARY.SELECTOR.POPULAR_HOT_DEAL.ITEM_LIST.FOR_DESKTOP;
 
-        const rawPopularHotDealList = await hotDealPage.$$eval(
-            popularItemListSelector,
-            (eachItem) => {
+        const rawPopularHotDealList = await hotDealPage
+            .locator(popularItemListSelector)
+            .evaluateAll((eachItem) => {
                 return eachItem.map((anchorTag) => {
                     const rawLink = anchorTag.getAttribute('href');
                     return {
@@ -259,8 +197,7 @@ export class FmkoreaHotDealScrapper {
                         link: rawLink,
                     };
                 });
-            }
-        );
+            });
 
         return rawPopularHotDealList.map<FmKoreaPopularHotDeal>((rawData) => {
             const srl = this.extractSrlFromHrefOfPopularHotDeal(rawData.link);
@@ -300,22 +237,28 @@ export class FmkoreaHotDealScrapper {
         hotDealPage: Page,
         isMobile: boolean
     ): Promise<FmKoreaGeneralHotDeal[]> {
-        const generalItemListSelector = '.li.li_best2_pop0.li_best2_hotdeal0';
+        const selectors = FMKOREA_AUXILIARY.SELECTOR.GENERAL_HOT_DEAL;
+        const informationForTraversing = {
+            isMobile,
+            selectors,
+        };
 
-        const rawGeneralHotDealList = await hotDealPage.$$eval(
-            generalItemListSelector,
-            (eachItem, isMobile) => {
+        const rawGeneralHotDealList = await hotDealPage
+            .locator(selectors.ITEM_LIST)
+            .evaluateAll((eachItem, informationForTraversing) => {
+                const { isMobile, selectors } = informationForTraversing;
+                const { ADDITIONAL_INFO, TITLE_AND_LINK, CATEGORY } = selectors;
                 return eachItem.map((liTag) => {
                     const [rawSellerName, rawProductPrice, rawShippingCharge] =
-                        Array.from(liTag.querySelectorAll('a.strong')).map(
+                        Array.from(liTag.querySelectorAll(ADDITIONAL_INFO)).map(
                             (anchorTag) => anchorTag.textContent
                         );
 
-                    const rawTitleAndLink = liTag.querySelector('h3.title > a');
+                    const rawTitleAndLink = liTag.querySelector(TITLE_AND_LINK);
 
                     const categorySelector = isMobile
-                        ? 'span.category'
-                        : 'span.category > a';
+                        ? CATEGORY.FOR_MOBILE
+                        : CATEGORY.FOR_DESKTOP;
 
                     const rawCategory = liTag.querySelector(categorySelector);
 
@@ -336,9 +279,7 @@ export class FmkoreaHotDealScrapper {
                             .trim(),
                     };
                 });
-            },
-            isMobile
-        );
+            }, informationForTraversing);
 
         return rawGeneralHotDealList
             .filter((deal) => deal.isValid)
@@ -394,13 +335,13 @@ export class FmkoreaHotDealScrapper {
                 }
             });
 
-            await page.goto(RuntimeConfig.FMKOREA_MAIN_URL);
+            await page.goto(RUNTIME_CONFIG.FMKOREA_MAIN_URL);
 
             const credentials = await context.cookies();
 
             await context.addCookies(credentials);
 
-            await page.goto(RuntimeConfig.FMKOREA_HOT_DEAL_URL);
+            await page.goto(RUNTIME_CONFIG.FMKOREA_HOT_DEAL_URL);
 
             const popularHotDealList = await this.parsePopularItem(
                 page,

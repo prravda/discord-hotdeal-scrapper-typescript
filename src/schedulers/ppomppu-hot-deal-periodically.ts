@@ -3,9 +3,12 @@ import { BrokerPublisher } from '../../infra/broker/broker-publisher';
 import { HotDealUpdated } from '../../infra/broker/events/hot-deal-updated';
 import { ENV_LIST } from '../../infra/env-config';
 import { HOT_DEAL_SOURCE } from '../../infra/enums';
+import { DuplicateTableRepository } from '../repositories/duplicate-table-repository';
 
 export const ppomppuHotDealPeriodically = async () => {
-    const ppomppuScrapper = new PpomppuHotDealScrapper();
+    const ppomppuScrapper = new PpomppuHotDealScrapper(
+        new DuplicateTableRepository()
+    );
     const publisher = await BrokerPublisher.get();
 
     try {
@@ -28,7 +31,7 @@ export const ppomppuHotDealPeriodically = async () => {
 
             setTimeout(
                 job,
-                1000 * 60 * 5 + Math.floor(Math.random() * 500) * 1000
+                1_000 * 60 + Math.floor(Math.random() * 60) * 1_000
             );
         };
 
