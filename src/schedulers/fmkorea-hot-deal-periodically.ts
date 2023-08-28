@@ -1,11 +1,14 @@
-import { FmkoreaHotDealScrapper } from '../scrappers/fmkorea-hot-deal-scrapper';
+import { FmKoreaHotDealScrapper } from '../scrappers/fm-korea-hot-deal-scrapper';
 import { BrokerPublisher } from '../../infra/broker/broker-publisher';
 import { HotDealUpdated } from '../../infra/broker/events/hot-deal-updated';
 import { ENV_LIST } from '../../infra/env-config';
 import { HOT_DEAL_SOURCE } from '../../infra/enums';
+import { DuplicateTableRepository } from '../repositories/duplicate-table-repository';
 
 export const fmKoreaHotDealPeriodically = async () => {
-    const fmKoreaScrapper = new FmkoreaHotDealScrapper();
+    const fmKoreaScrapper = new FmKoreaHotDealScrapper(
+        new DuplicateTableRepository()
+    );
     const publisher = await BrokerPublisher.get();
 
     try {
@@ -41,7 +44,7 @@ export const fmKoreaHotDealPeriodically = async () => {
 
             setTimeout(
                 job,
-                1000 * 60 * 4 + Math.floor(Math.random() * 567) * 1000
+                1_000 * 60 + Math.floor(Math.random() * 60) * 1_000
             );
         };
 
