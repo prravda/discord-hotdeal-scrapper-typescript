@@ -33,6 +33,7 @@
     "axios": "^1.3.3",
     "dotenv": "^16.0.3",
     "iconv-lite": "^0.6.3",
+    "ioredis": "^5.3.2",
     "joi": "^17.7.1",
     "linkedom": "^0.15.1",
     "memphis-dev": "^1.0.5",
