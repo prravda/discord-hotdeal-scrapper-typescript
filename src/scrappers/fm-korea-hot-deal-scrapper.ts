@@ -1,6 +1,6 @@
 import { chromium, devices } from 'playwright-core';
 import { RUNTIME_CONFIG } from '../../infra/runtime-config';
-import { Page, webkit } from 'playwright';
+import { Page, Request, webkit } from 'playwright';
 import {
     BasicHotDeal,
     FmKoreaGeneralHotDeal,
@@ -307,6 +307,29 @@ export class FmKoreaHotDealScrapper {
             });
     }
 
+    private async detectCredential(req: Request) {
+        /**
+         * when detecting the fingerprint is required later,
+         * use this method with event emitter like this
+         * page.on('request', this.detectCredential);
+         */
+        const header = await req.allHeaders();
+        const cookie = header['cookie'] || '';
+
+        const matcherForFingerPrint = /idntm5=(.*?);/;
+        const fingerPrintMatch = cookie.match(matcherForFingerPrint);
+
+        if (fingerPrintMatch) {
+            const [, fingerPrint] = fingerPrintMatch;
+            const { 'user-agent': userAgent } = header;
+
+            LokiLogger.getLogger().info({
+                labels: { origin: 'fmkorea', target: 'credential' },
+                message: { fingerPrint, userAgent },
+            });
+        }
+    }
+
     private async parseHotDeal(): Promise<FmKoreaTotalHotDeal> {
         const { browserToUse, browserContextOptions } =
             this.getBrowserAndContextBasedOnUserAgent();
@@ -315,24 +338,6 @@ export class FmKoreaHotDealScrapper {
 
         try {
             const page = await context.newPage();
-
-            page.on('request', async (req) => {
-                const header = await req.allHeaders();
-                const cookie = header['cookie'] || '';
-
-                const matcherForFingerPrint = /idntm5=(.*?);/;
-                const fingerPrintMatch = cookie.match(matcherForFingerPrint);
-
-                if (fingerPrintMatch) {
-                    const [, fingerPrint] = fingerPrintMatch;
-                    const { 'user-agent': userAgent } = header;
-
-                    LokiLogger.getLogger().info({
-                        labels: { origin: 'fmkorea', target: 'credential' },
-                        message: { fingerPrint, userAgent },
-                    });
-                }
-            });
 
             await page.goto(RUNTIME_CONFIG.FMKOREA_MAIN_URL);
 
