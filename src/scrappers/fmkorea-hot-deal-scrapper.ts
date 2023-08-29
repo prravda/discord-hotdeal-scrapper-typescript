@@ -1,6 +1,6 @@
 import { chromium, devices } from 'playwright-core';
 import { RUNTIME_CONFIG } from '../../infra/runtime-config';
-import { Page, Request, webkit } from 'playwright';
+import { Page, Request } from 'playwright';
 import {
     BasicHotDeal,
     FmKoreaGeneralHotDeal,
@@ -355,6 +355,8 @@ export class FmKoreaHotDealScrapper {
                 page,
                 browserContextOptions.isMobile
             );
+
+            await page.close();
 
             if (!popularHotDealList || !generalHotDealList) {
                 throw new Error('An error is occurred');

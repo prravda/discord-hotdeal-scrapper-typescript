@@ -1,4 +1,4 @@
-import { FmKoreaHotDealScrapper } from '../scrappers/fm-korea-hot-deal-scrapper';
+import { FmKoreaHotDealScrapper } from '../scrappers/fmkorea-hot-deal-scrapper';
 import { BrokerPublisher } from '../../infra/broker/broker-publisher';
 import { HotDealUpdated } from '../../infra/broker/events/hot-deal-updated';
 import { ENV_LIST } from '../../infra/env-config';
