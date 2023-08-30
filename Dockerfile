@@ -9,7 +9,9 @@ RUN npm install --omit=dev \
 COPY . /app
 
 FROM mcr.microsoft.com/playwright:v1.37.0-jammy as execution
-RUN apt-get update && apt-get install dumb-init
+RUN apt-get update &&  \
+    apt-get upgrade -y && \
+    apt-get install dumb-init
 WORKDIR /app
 COPY --from=build /app /app
 
