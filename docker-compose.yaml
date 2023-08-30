@@ -35,23 +35,6 @@ services:
     networks:
       - hotdeal-service
 
-  pyroscope:
-    hostname: pyroscope
-    container_name: pyroscope
-    image: "pyroscope/pyroscope:latest"
-    deploy:
-      restart_policy:
-        condition: on-failure
-    ports:
-      - "4040:4040"
-    command:
-      - "server"
-    volumes:
-      - ./grafana/pyroscope-local-config.yaml:/etc/pyroscope/server.yaml
-      - pyroscope:/var/lib/pyroscope
-    networks:
-      - hotdeal-service
-
   loki:
     image: grafana/loki:latest
     container_name: "loki"
