@@ -68,5 +68,4 @@ networks:
     external: true
 
 volumes:
-  pyroscope:
   loki:
