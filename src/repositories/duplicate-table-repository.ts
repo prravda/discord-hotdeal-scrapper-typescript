@@ -6,11 +6,11 @@ export class DuplicateTableRepository
     implements DuplicateTableRepositoryInterface
 {
     private readonly connection: Redis = duplicateTableRedis;
-    private readonly twelveHourInSec = 60 * 60 * 12;
+    private readonly sixHoursInSec = 60 * 60 * 6;
 
     private async addKey(hash: string): Promise<void> {
         try {
-            await this.connection.set(hash, 1, 'EX', this.twelveHourInSec);
+            await this.connection.set(hash, 1, 'EX', this.sixHoursInSec);
         } catch (e) {
             throw e;
         }
