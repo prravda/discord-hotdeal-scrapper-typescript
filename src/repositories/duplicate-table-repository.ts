@@ -15,14 +15,28 @@ export class DuplicateTableRepository
             throw e;
         }
     }
+    public async updateExpire(hash: string): Promise<void> {
+        try {
+            await this.connection.expire(hash, this.sixHoursInSec);
+        } catch (e) {
+            throw e;
+        }
+    }
     public async isNewHotDeal(hash: string) {
         try {
             const alreadyExist = await this.connection.get(hash);
 
+            // if this hot deal is a fresh hot deal, add key to redis
             if (!alreadyExist) {
                 await this.addKey(hash);
             }
-            // alreadyExist is null === this is a new hot deal
+
+            // although this is not a fresh hot deal,
+            // update expiration time using expire command
+            await this.updateExpire(hash);
+
+            // return alreadyExist === null as a result
+            // if this calculation is true, it is a fresh hot deal
             return alreadyExist === null;
         } catch (e) {
             throw e;
