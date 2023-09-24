@@ -15,7 +15,7 @@ export class DuplicateTableRepository
             throw e;
         }
     }
-    public async updateExpire(hash: string): Promise<void> {
+    private async updateExpire(hash: string): Promise<void> {
         try {
             await this.connection.expire(hash, this.sixHoursInSec);
         } catch (e) {
@@ -33,7 +33,9 @@ export class DuplicateTableRepository
 
             // although this is not a fresh hot deal,
             // update expiration time using expire command
-            await this.updateExpire(hash);
+            if (alreadyExist) {
+                await this.updateExpire(hash);
+            }
 
             // return alreadyExist === null as a result
             // if this calculation is true, it is a fresh hot deal
