@@ -1,4 +1,4 @@
-FROM node:18.17.1 as build
+FROM node:18.18.0 as build
 
 WORKDIR /app
 COPY  package.json package-lock.json ./
@@ -8,7 +8,7 @@ RUN npm install --omit=dev \
     rm -rf /root/.cache && rm -rf /root/.npm
 COPY . /app
 
-FROM mcr.microsoft.com/playwright:v1.37.0-jammy as execution
+FROM mcr.microsoft.com/playwright:v1.38.0-jammy as execution
 RUN apt-get update &&  \
     apt-get upgrade -y && \
     apt-get install dumb-init
