@@ -8,12 +8,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    deploy:
-      restart_policy:
-        condition: on-failure
-      resources:
-        limits:
-          memory: 512M
+    restart: always
+    mem_limit: 512M
     env_file:
       - .env
     labels:
