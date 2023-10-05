@@ -11,6 +11,9 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          memory: 512M
     env_file:
       - .env
     labels:
