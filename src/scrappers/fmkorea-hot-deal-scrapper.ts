@@ -342,8 +342,6 @@ export class FmKoreaHotDealScrapper {
 
             const credentials = await context.cookies();
 
-            const fingerprint = page.on('request', this.detectCredential);
-
             await context.addCookies(credentials);
 
             await page.goto(RUNTIME_CONFIG.FMKOREA_HOT_DEAL_URL);
@@ -356,8 +354,6 @@ export class FmKoreaHotDealScrapper {
                 page,
                 browserContextOptions.isMobile
             );
-
-            await page.close();
 
             if (!popularHotDealList || !generalHotDealList) {
                 throw new Error('An error is occurred');
