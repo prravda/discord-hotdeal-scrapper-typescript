@@ -335,9 +335,9 @@ export class FmKoreaHotDealScrapper {
             this.getBrowserAndContextBasedOnUserAgent();
         const browser = await browserToUse.launch();
         const context = await browser.newContext(browserContextOptions);
-        const page = await context.newPage();
 
         try {
+            const page = await context.newPage();
             page.on('request', this.detectCredential);
 
             await page.goto(RUNTIME_CONFIG.FMKOREA_MAIN_URL);
@@ -361,6 +361,8 @@ export class FmKoreaHotDealScrapper {
                 throw new Error('An error is occurred');
             }
 
+            await page.close();
+
             return {
                 popular: popularHotDealList,
                 general: generalHotDealList,
@@ -375,7 +377,6 @@ export class FmKoreaHotDealScrapper {
             });
             throw e;
         } finally {
-            await page.close();
             await context.close();
             await browser.close();
         }
