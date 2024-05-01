@@ -335,7 +335,9 @@ export class FmKoreaHotDealScrapper {
             this.getBrowserAndContextBasedOnUserAgent();
         const browser = await browserToUse.launch();
         const context = await browser.newContext(browserContextOptions);
+
         const page = await context.newPage();
+        page.on('request', this.detectCredential);
 
         try {
             await page.goto(RUNTIME_CONFIG.FMKOREA_MAIN_URL);
@@ -343,8 +345,6 @@ export class FmKoreaHotDealScrapper {
             const credentials = await context.cookies();
 
             await context.addCookies(credentials);
-
-            page.on('request', this.detectCredential);
 
             await page.goto(RUNTIME_CONFIG.FMKOREA_HOT_DEAL_URL);
 
