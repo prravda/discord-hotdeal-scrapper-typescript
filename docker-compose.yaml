@@ -9,7 +9,6 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
-    mem_limit: 512M
     env_file:
       - .env
     labels:
