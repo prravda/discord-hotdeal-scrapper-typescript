@@ -335,13 +335,14 @@ export class FmKoreaHotDealScrapper {
             this.getBrowserAndContextBasedOnUserAgent();
         const browser = await browserToUse.launch();
         const context = await browser.newContext(browserContextOptions);
+        const page = await context.newPage();
 
         try {
-            const page = await context.newPage();
-
             await page.goto(RUNTIME_CONFIG.FMKOREA_MAIN_URL);
 
             const credentials = await context.cookies();
+
+            const fingerprint = page.on('request', this.detectCredential);
 
             await context.addCookies(credentials);
 
@@ -368,6 +369,7 @@ export class FmKoreaHotDealScrapper {
             };
         } catch (e) {
             const errorAsErrorObject = e as Error;
+            page.on('request', this.detectCredential);
             LokiLogger.getLogger().error({
                 label: {
                     origin: 'fmkorea',
@@ -376,6 +378,7 @@ export class FmKoreaHotDealScrapper {
             });
             throw e;
         } finally {
+            await page.close();
             await context.close();
             await browser.close();
         }
