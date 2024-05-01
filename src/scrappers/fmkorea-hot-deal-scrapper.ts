@@ -344,6 +344,8 @@ export class FmKoreaHotDealScrapper {
 
             await context.addCookies(credentials);
 
+            page.on('request', this.detectCredential);
+
             await page.goto(RUNTIME_CONFIG.FMKOREA_HOT_DEAL_URL);
 
             const popularHotDealList = await this.parsePopularItem(
@@ -365,7 +367,6 @@ export class FmKoreaHotDealScrapper {
             };
         } catch (e) {
             const errorAsErrorObject = e as Error;
-            page.on('request', this.detectCredential);
             LokiLogger.getLogger().error({
                 label: {
                     origin: 'fmkorea',
